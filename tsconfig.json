@@ -1,0 +1,10 @@
+{
+  "include": ["src/**/*"],
+  "exclude": ["node_modules/*"],
+  "compilerOptions": {
+    "target": "es2017",
+    "types": ["svelte", "node"],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
+  }
+}

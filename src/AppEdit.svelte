@@ -1,0 +1,115 @@
+<script>
+	import { browser } from "webextension-polyfill-ts";
+
+	import EditDialog from './EditDialog.svelte';
+
+	async function get_bg_module() {
+		let bg_module = await browser.runtime.getBackgroundPage()
+		return bg_module.background
+	}
+
+	async function get_tab() {
+		let tabs = await browser.tabs.query({active: true, currentWindow: true})
+		if (tabs.length == 0) {
+			throw new Error("Cannot read tab information!")
+		}
+
+		return tabs[0];
+	}
+
+	function assert_attr(obj, attr) {
+		if (!obj.hasOwnProperty(attr)) {
+			throw new ReferenceError('The property ' + attr + ' is not defined on this object');
+		}
+	}
+
+	async function get_page(tab) {
+		let bg = await get_bg_module()
+		bg.update_icon(tab.id, {starred:true})
+
+		let defaults = {description: tab.title, starred: true}
+		let [page, just_created] = await bg.pages_db.getOrNewPage(tab.url, defaults)
+		page._just_created = just_created	// XXX
+		if (!page.starred) {
+			page.starred = true
+			bg.pages_db.updatePage(page).then( () => {} )
+		}
+		return page
+	}
+
+	async function remove(tab) {
+		let bg = await get_bg_module()
+		let deleted = await bg.pages_db.deletePage(tab.url)
+		bg.update_icon(tab.id, {starred: false})
+		window.close()
+	}
+
+	async function remove_star_and_close(tab, page) {
+		if (page._just_created) {
+			// await remove_star(tab, page)
+			let bg = await get_bg_module()
+			let deleted = await bg.pages_db.deletePage(tab.url)
+			bg.update_icon(tab.id, {starred: false})
+		}
+		close()
+	}
+
+	async function remove_star(tab, page) {
+		let bg = await get_bg_module()
+		page.starred = false
+		await bg.pages_db.updatePage(page)
+		bg.update_icon(tab.id, {starred: false})
+	}
+
+	async function close() {
+		window.close()
+	}
+
+
+</script>
+
+<main>
+	<!-- <h2>Count is {$timer}</h2> -->
+	{#await get_tab()}
+		<p>...waiting</p>
+	{:then tab}
+		<button class="diminished" style="float:right" on:click={() => remove(tab)}>remove</button>
+
+		{#await get_page(tab) then page}
+			{#if page._just_created}
+				<h1> Create bookmark </h1>
+				<h4> First visit! </h4>
+			{:else}
+				<h1> Edit bookmark </h1>
+			{/if}
+
+				<EditDialog
+					description={page.description}
+					url={page._id}
+					notes={page.notes || ''}
+					tags={page.tags || []}
+					suggested_tags={["do!", "watch!", "read!", "play!", "listen!"]}
+					on:save={close}
+					on:cancel={() => {remove_star_and_close(tab, page)}}
+				/>
+
+			{#if page.visit_count}
+				<h4>
+					You visited this page {page.visit_count} times (<button class="diminished">view history</button>)
+				</h4>
+			{/if}
+		{/await}
+
+	{:catch error}
+		<p style="color: red">{error.message}</p>
+	{/await}
+
+</main>
+
+<style>
+main {
+	margin: 0;
+	padding: 0;
+	margin-top: 0;
+}
+</style>

@@ -1,0 +1,43 @@
+{
+  "name": "total-recall",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "start": "sirv public"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^12.0.0",
+    "@rollup/plugin-node-resolve": "^8.0.0",
+    "@rollup/plugin-typescript": "^5.0.2",
+    "@smui/button": "^1.1.0",
+    "@smui/checkbox": "^1.1.0",
+    "@smui/common": "^1.0.0",
+    "@smui/dialog": "^1.1.0",
+    "@smui/icon-button": "^1.1.0",
+    "@smui/select": "^1.1.0",
+    "@types/file-saver": "^2.0.1",
+    "@types/node": "^14.14.35",
+    "@types/pouchdb": "^6.4.0",
+    "autoprefixer": "^9.0.0",
+    "file-saver": "^2.0.5",
+    "flexsearch": "^0.6.32",
+    "postcss": "^8.2.8",
+    "postcss-loader": "^5.2.0",
+    "pouchdb": "^7.2.2",
+    "rollup": "^2.41.5",
+    "rollup-plugin-livereload": "^1.0.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "rollup-plugin-postcss": "^3.1.8",
+    "rollup-plugin-svelte": "^5.0.3",
+    "rollup-plugin-terser": "^5.3.1",
+    "sass": "^1.32.8",
+    "sirv-cli": "^0.4.4",
+    "svelte": "^3.35.0",
+    "svelte-preprocess": "^4.6.9",
+    "tslib": "^2.1.0",
+    "typescript": "^4.2.3",
+    "webextension-polyfill-ts": "^0.19.0"
+  },
+  "dependencies": {}
+}

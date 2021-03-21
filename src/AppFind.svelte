@@ -1,0 +1,208 @@
+<script>
+	import { browser } from "webextension-polyfill-ts";
+	import { onMount } from 'svelte';
+
+	import SearchList from './SearchList.svelte'
+	import Sidebar from './Sidebar.svelte'
+	import EditDialog from './EditDialog.svelte';
+
+	let search_input;
+
+	let edit_mode = false
+	let edit_items;
+
+	let search = ""
+	let only_starred = true
+	let search_results;
+	$: set_search_results(search, only_starred)
+
+	async function set_search_results(search, only_starred) {
+		// Avoid the 'await' update flicker
+		let res = await get_search_results(search, only_starred)
+		search_results = new Promise( (then, except) => {then(res)})
+	}
+
+	async function get_bg_module() {
+		let bg_module = await browser.runtime.getBackgroundPage()
+		return bg_module.background
+	}
+
+	async function get_search_results(search, only_starred) {
+		let bg_module = await get_bg_module()
+		return bg_module.pages_db.search(search, only_starred)
+	}
+
+	async function get_count() {
+		let bg_module = await get_bg_module()
+		return await bg_module.pages_db.count()
+	}
+
+
+	function focus(x) {x.focus()}
+
+	async function get_sidebars() {
+		let bg_module = await get_bg_module()
+		let sidebars = []
+		for (let tag of ['todo'])
+		{
+			sidebars.push({
+				name: tag,
+				items: bg_module.pages_db.search('#'+tag)
+			})
+		}
+		return sidebars;
+	}
+
+	onMount(async () => {
+		// search_input.value isn't accessible after back button
+		// Bug is svelte? Use SetTimeout 0 to fix it
+		setTimeout(function() {
+			console.log(search_input.value)
+			search = search_input.value
+		}, 0)
+	});
+
+	async function delete_items(e) {
+		let selected = e.detail.selected
+		let res = confirm('delete ' + selected.length + ' items?')
+		if (res) {
+			let bg_module = await get_bg_module()
+			for (let item of selected) {
+				console.log('deleting ', item)
+				await bg_module.pages_db.deletePage(item._id)
+				await set_search_results(search, only_starred)
+			}
+		}
+	}
+
+	function set_edit_mode(e) {
+		edit_mode = true
+		edit_items = e.detail.selected
+	}
+
+	function save_edit_item(item) {
+		close_edit_item(item)
+	}
+	function close_edit_item(item) {
+		let new_items = []
+		for (let i of edit_items) {
+			if (i._id != item._id) {
+				new_items.push(i)
+			}
+		}
+		edit_items = new_items
+		if (edit_items.length == 0) {
+			edit_mode = false
+		}
+	}
+
+</script>
+
+
+<main>
+	<h1>Find bookmarked pages</h1>
+	<div>
+		{#await get_count()}
+			Counting ...
+		{:then r}
+			<p>total: {r}</p>
+		{:catch error}
+			<p style="color: red">{error.message}</p>
+		{/await}
+	</div>
+
+	{#if edit_mode}
+	<button on:click={()=>edit_mode=false}>Back to search</button>
+	<div id="edit_area">
+		{#each edit_items as page}
+		<div class="edit_item">
+			<EditDialog
+				description={page.description}
+				url={page._id}
+				notes={page.notes || ''}
+				tags={page.tags || []}
+				suggested_tags={["do!", "watch!", "read!", "play!", "listen!"]}
+				on:save={() => {save_edit_item(page)}}
+				on:cancel={() => {close_edit_item(page)}}
+			/>
+		</div>
+		{/each}
+	</div>
+	{:else}
+	<div id="search">
+		<div id="search_bar">
+			<!-- <input type="search" id="search_input" placeholder="Search" bind:value={search} use:focus /> -->
+			<input type="search" id="search_input" placeholder="Search" bind:value={search} bind:this={search_input} use:focus />
+			<!-- <label><input type="checkbox" bind:checked={only_starred} />Only Starred</label> -->
+		</div>
+		{#if search}
+			{#await search_results}
+				...?
+			{:then r}
+				<SearchList items={r} on:edit={set_edit_mode} on:delete={delete_items}/>
+			{:catch error}
+				<p style="color: red">{error.message}</p>
+			{/await}
+		{:else}
+			<div id="sidebars">
+				{#await get_sidebars()}
+					Getting sidebars
+				{:then sidebars}
+					{#each sidebars as {name, items}}
+						<Sidebar {name} {items}/>
+					{/each}
+				{:catch error}
+					<p style="color: red">{error.message}</p>
+				{/await}
+			</div>
+
+		{/if}
+	</div>
+	{/if}
+
+</main>
+
+<style>
+
+main {
+	margin: 0;
+	padding: 0;
+	margin-top: 0;
+}
+
+#search {
+	padding: 20px;
+}
+#sidebars {
+	padding: 20px;
+	/* width: 30vw; */
+	display: flex;
+	flex-wrap: wrap;
+}
+
+#search_input {
+	min-width: 400px;
+	height: 50px;
+	padding: 10px;
+	font-size: 18px;
+}
+
+#search_bar {
+	display: flex;
+	justify-content: left;
+}
+
+#edit_area {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.edit_item {
+    width: 500px;
+    margin: 10px;
+    background: #eee;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+</style>
