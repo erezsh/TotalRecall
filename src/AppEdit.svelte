@@ -1,19 +1,9 @@
-<script>
-	import { browser } from "webextension-polyfill-ts";
+<script lang="ts">
+	import browser from "webextension-polyfill";
 
 	import EditDialog from './EditDialog.svelte';
-	// import {get_db, PagesDB} from './interfaces.ts';
+	import {get_db, Page, get_bg_module} from './interfaces.ts';
 	
-	async function get_bg_module() {
-		let bg_page = await browser.runtime.getBackgroundPage()
-		return bg_page.background
-	}
-
-	async function get_bg_module() {
-		let bg_module = await browser.runtime.getBackgroundPage()
-		return bg_module.background
-	}
-
 	async function get_tab() {
 		let tabs = await browser.tabs.query({active: true, currentWindow: true})
 		if (tabs.length == 0) {
@@ -29,9 +19,9 @@
 		}
 	}
 
-	async function get_page(tab) {
+	async function get_page(tab): Page {
 		let bg = await get_bg_module()
-		let db: PagesDB = bg.pages_db
+		let db = bg.pages_db
 		bg.update_icon(tab.id, {starred:true})
 
 		let defaults = {description: tab.title, starred: true}
@@ -46,7 +36,7 @@
 
 	async function remove(tab) {
 		let bg = await get_bg_module()
-		let db: PagesDB = bg.pages_db
+		let db = bg.pages_db
 		let deleted = await db.deletePage(tab.url)
 		bg.update_icon(tab.id, {starred: false})
 		window.close()
@@ -56,16 +46,16 @@
 		if (page._just_created) {
 			// await remove_star(tab, page)
 			let bg = await get_bg_module()
-			let db: PagesDB = bg.pages_db
+			let db = bg.pages_db
 			let deleted = await db.deletePage(tab.url)
 			bg.update_icon(tab.id, {starred: false})
 		}
 		close()
 	}
 
-	async function remove_star(tab, page) {
+	async function remove_star(tab, page: Page) {
 		let bg = await get_bg_module()
-		let db: PagesDB = bg.pages_db
+		let db = bg.pages_db
 		page.starred = false
 		await db.updatePage(page)
 		bg.update_icon(tab.id, {starred: false})
