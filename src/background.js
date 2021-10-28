@@ -2,8 +2,6 @@
 import {db} from 'db'
 import { browser } from "webextension-polyfill-ts";
 
-// let db = null
-
 console.log("Background page loaded")
 
 browser.commands.onCommand.addListener(function(command) {
@@ -58,7 +56,6 @@ function assert_attr(obj, attr) {
 }
 
 export function update_icon(tab_id, page) {
-    // if (page) assert_attr(page, 'starred')
     setIcon(tab_id, page?Boolean(page.starred):false)
 }
 
@@ -107,13 +104,13 @@ async function handleUpdated(tabId, changeInfo, tab) {
         return
     }
 
-    if (false) { //"track_visited") {      // TODO
+    // if (false) { //"track_visited") {      // TODO
         // Disabled for now. Only track bookmarked pages
         // let defaults = {description: tab.title, starred: false}
         // ;[page, _just_created] = await db.getOrNewPage(tab.url, defaults)
         // console.log("tracking", tab.url, page, _just_created)
-    } else {
-    }
+    // } else {
+    // }
 
     let page = await db.getPage(tab.url)
     

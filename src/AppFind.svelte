@@ -1,10 +1,11 @@
-<script>
+<script lang="typescript">
 	import { browser } from "webextension-polyfill-ts";
 	import { onMount } from 'svelte';
 
 	import SearchList from './SearchList.svelte'
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
+	import {get_db} from './interfaces.ts';
 
 	let search_input;
 
@@ -22,32 +23,27 @@
 		search_results = new Promise( (then, except) => {then(res)})
 	}
 
-	async function get_bg_module() {
-		let bg_module = await browser.runtime.getBackgroundPage()
-		return bg_module.background
-	}
-
 	async function get_search_results(search, only_starred) {
-		let bg_module = await get_bg_module()
-		return bg_module.pages_db.search(search, only_starred)
+		let db: PagesDB = await get_db()
+		return db.search(search, only_starred)
 	}
 
 	async function get_count() {
-		let bg_module = await get_bg_module()
-		return await bg_module.pages_db.count()
+		let db: PagesDB = await get_db()
+		return await db.count()
 	}
 
 
 	function focus(x) {x.focus()}
 
 	async function get_sidebars() {
-		let bg_module = await get_bg_module()
+		let db: PagesDB = await get_db()
 		let sidebars = []
 		for (let tag of ['todo'])
 		{
 			sidebars.push({
 				name: tag,
-				items: bg_module.pages_db.search('#'+tag)
+				items: db.search('#'+tag)
 			})
 		}
 		return sidebars;
@@ -66,10 +62,10 @@
 		let selected = e.detail.selected
 		let res = confirm('delete ' + selected.length + ' items?')
 		if (res) {
-			let bg_module = await get_bg_module()
+			let db: PagesDB = await get_db()
 			for (let item of selected) {
 				console.log('deleting ', item)
-				await bg_module.pages_db.deletePage(item._id)
+				await db.deletePage(item._id)
 				await set_search_results(search, only_starred)
 			}
 		}
