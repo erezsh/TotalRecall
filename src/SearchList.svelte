@@ -77,36 +77,56 @@
         }
     }
 
+    function key_navigate(e, f) {
+        auto_scroll = true;
+
+        let new_index = f(select_active)
+
+        if (new_index < 0) {
+            new_index = 0
+        } else if (new_index >= res_len-1) {
+            new_index = res_len-1
+        }
+
+        if (new_index >= loaded_len) {
+            next_page()
+        }
+
+        select_active = new_index
+        if (!e.shiftKey) {
+            select_anchor=select_active;
+        }
+        e.preventDefault()
+    }
+
+
 	function keydown(e) {
         switch (e.key) {
             case 'ArrowDown':
-                auto_scroll = true;
-
-                if (select_active+1 < res_len) {
-                    if (select_active+1 >= loaded_len) {
-                        next_page()
-                    }
-
-                    select_active++;
-                    if (!e.shiftKey) {
-                        select_anchor=select_active;
-                    }
-                }
-                e.preventDefault()
+                key_navigate(e, (i) => i + 1)
                 break
             case 'ArrowUp':
-                auto_scroll = true;
-
-                if (select_active > 0) {
-                    select_active--;
-                    if (!e.shiftKey) {
-                        select_anchor=select_active;
-                    }
-                }
-                e.preventDefault()
+                key_navigate(e, (i) => i - 1)
                 break
+            case 'PageDown':
+                key_navigate(e, (i) => i + 20)
+                break
+            case 'PageUp':
+                key_navigate(e, (i) => i - 20)
+                break
+            case 'Home':
+                key_navigate(e, (i) => 0)
+                break
+            case 'End':
+                key_navigate(e, (i) => res_len-1)
+                break
+
             case 'Enter':
                 open_items(e.shiftKey, e.ctrlKey)
+                e.preventDefault()
+                break
+            case 'Insert':
+                edit_items()
                 e.preventDefault()
                 break
             case 'Delete':

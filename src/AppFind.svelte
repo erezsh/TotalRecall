@@ -39,7 +39,7 @@
 	async function get_sidebars() {
 		let db = await get_db()
 		let sidebars = []
-		for (let tag of ['todo'])
+		for (let tag of ['todo', 'to watch'])
 		{
 			sidebars.push({
 				name: tag,

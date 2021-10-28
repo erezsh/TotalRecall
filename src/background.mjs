@@ -1,6 +1,5 @@
-// import EventEmitter from 'events';
-import {db} from 'db'
-import { browser } from "webextension-polyfill-ts";
+import {db} from './db.mjs'
+import browser from "webextension-polyfill";
 
 console.log("Background page loaded")
 
@@ -56,7 +55,12 @@ function assert_attr(obj, attr) {
 }
 
 export function update_icon(tab_id, page) {
-    setIcon(tab_id, page?Boolean(page.starred):false)
+    try {
+        setIcon(tab_id, page?Boolean(page.starred):false)
+    } catch(e) {
+        console.error("Could not update icon:", e)
+        console.trace()
+    }
 }
 
 
@@ -84,6 +88,7 @@ async function extractTabMeta(tab) {
 
 
 async function handleUpdated(tabId, changeInfo, tab) {
+    try{
     // Gets called every time a tab is updated
 
     // TODO log previous URL in page.visits
@@ -156,6 +161,11 @@ async function handleUpdated(tabId, changeInfo, tab) {
         }
 
     }
+
+} catch (e) {
+    console.error("AAAA", e)
+    console.trace()
+}
 }
 
 export function get_browser() {
@@ -174,9 +184,21 @@ async function install_page_content_script(tab_id) {
 
 
 async function handleActivated(info) {
-    let tab = await browser.tabs.get(info.tabId);
+    try{
+    let tab
+    try {
+        tab = await browser.tabs.get(info.tabId);
+    } catch(e) {
+        console.error("Cannot find activated tab:", e)
+        console.trace()
+        return
+    }
     let page = await db.getPage(tab.url)
     update_icon(tab.id, page)
+} catch(e) {
+    console.error("AAAA", e)
+    console.trace()
+}
 }
 
 console.log("Adding handler")

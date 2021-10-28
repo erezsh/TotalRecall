@@ -143,7 +143,7 @@ export default [
 		watch
 	},
 	{
-		input: 'src/background.js',
+		input: 'src/background.mjs',
 		output: {
 			sourcemap: true,
 			format: 'iife',
