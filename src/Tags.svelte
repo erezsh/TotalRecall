@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { createEventDispatcher } from 'svelte';
 
 const dispatch = createEventDispatcher();
@@ -8,7 +8,7 @@ let regExpEscape = (s) => {
   return s.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&")
 }
 
-export let tags;
+export let tags: Array<string>;
 export let addKeys;
 export let maxTags;
 export let onlyUnique;

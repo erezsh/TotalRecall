@@ -1,25 +1,24 @@
-<script>
-    import { browser } from "webextension-polyfill-ts";
+<script lang="ts">
+    import browser from "webextension-polyfill";
+    import {get_db, get_bg_module, SyncTarget} from './interfaces.ts';
 
     import { saveAs } from 'file-saver';
+    import { writable } from 'svelte-local-storage-store'
 
-	async function get_bg_module() {
-		let bg_module = await browser.runtime.getBackgroundPage()
-		return bg_module.background
-    }
+    const sync_config = writable<SyncConfig>('sync_config', {sync_target: "null"})
+    const sync_status = writable<SyncConfig>('sync_status', {status: "disabled"})
 
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-
 
     let bookmark_import_started = false
     let bookmark_import_done = false
     let bookmark_import_count = 0
 
     async function export_bookmarks() {
-        let bg = await get_bg_module()
-        let pages = await bg.pages_db.allPages()
+        let db = await get_db()
+        let pages = await db.allPages()
         let json = JSON.stringify(pages, null, 2)
         console.log(json)
         var file = new File([json], "total_recall_backup.json", {type: "application/json"});
@@ -28,8 +27,7 @@
 
     export async function import_browser_bookmarks()
     {
-        let bg = await get_bg_module()
-        let db = await bg.pages_db
+        let db = await get_db()
 
         console.log('Starting bookmarks import...')
         bookmark_import_started = true
@@ -79,21 +77,31 @@
     let collect_tags = false;
     let collect_content = false;
     // $: collect_tags && request_page_access().then( () => {} )
-</script>
 
-<style>
-/* section {
-    background: #eee;
-    border: 1px solid black;
-    border-radius: 10px;
-} */
-</style>
+
+    let main_server_user, main_server_pass, custom_couch_url
+    function load_config_into_locals() {
+        ({main_server_user, main_server_pass, custom_couch_url} = $sync_config)
+    }
+
+    $: $sync_config, load_config_into_locals()
+
+    async function save_custom_couch() {
+        $sync_config = {...$sync_config, custom_couch_url}
+    }
+
+    async function save_main_server() {
+        $sync_config = {...$sync_config, main_server_user, main_server_pass}
+    }
+</script>
 
 
 <main>
 	<h1>Configuration</h1>
 
     <div id="sections">
+
+    {#if false}
     <section class="section">
         <h2>Tracking</h2>
 
@@ -107,19 +115,40 @@
         <label><input type="checkbox" bind:checked={collect_content} disabled/>Collect page contents for full-text search</label>
 
     </section>
+    {/if}
 
     <section class="section">
         <h2>Replication (Sync)</h2>
 
-        <h4>Control which pages are synced to an external database</h4>
+        <h4>Control which pages are synced to an external database.</h4>
 
-        <label><input type="checkbox" /> Sync bookmarks</label>
+        <h4>Sync status:</h4>
 
-        <!-- <label><input type="checkbox" /> Sync visited pages</label> -->
+        {$sync_status.status} -- {$sync_status.message}
 
-        <h4>Replication targets</h4>
+        <h4>Sync target:</h4>
 
-        Note: if no target
+        <label><input type="radio" bind:group={$sync_config.sync_target} value={SyncTarget.None}/>No sync</label>
+
+        <label><input type="radio" bind:group={$sync_config.sync_target} value={SyncTarget.MainServer}/>Sync to TotalRecall free server</label>
+
+        <label><input type="radio" bind:group={$sync_config.sync_target} value={SyncTarget.CustomCouch}/>Sync to custom CouchDB</label>
+
+        {#if $sync_config.sync_target == SyncTarget.MainServer}
+            <div class="inner_dialog">
+                <h5>Login details for free server:</h5>
+                <label>username: <input type="text" bind:value={main_server_user} required /></label>
+                <label>password: <input type="password" bind:value={main_server_pass} required /></label>
+                <button on:click={save_main_server}>Save</button>
+                (registration is automatic)
+            </div>
+        {:else if $sync_config.sync_target == SyncTarget.CustomCouch}
+            <div class="inner_dialog">
+                <h5>URL for custom CouchDB:</h5>
+                <label>URL: <input type="url" bind:value={custom_couch_url}/></label>
+                <button on:click={save_custom_couch}>Save</button>
+            </div>
+        {/if}
 
     </section>
 
@@ -151,3 +180,7 @@
     </div>
 
 </main>
+
+<style>
+
+</style>

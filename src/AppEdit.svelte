@@ -29,7 +29,7 @@
 		page._just_created = just_created	// XXX
 		if (!page.starred) {
 			page.starred = true
-			bg.pages_db.updatePage(page).then( () => {} )
+			db.updatePage(page).then( () => {} )
 		}
 		return page
 	}

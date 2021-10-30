@@ -80,13 +80,7 @@
 		close_edit_item(item)
 	}
 	function close_edit_item(item: Page) {
-		let new_items = []
-		for (let i of edit_items) {
-			if (i._id != item._id) {
-				new_items.push(i)
-			}
-		}
-		edit_items = new_items
+		edit_items = edit_items.filter( (i) => i._id !== item._id)
 		if (edit_items.length == 0) {
 			edit_mode = false
 		}

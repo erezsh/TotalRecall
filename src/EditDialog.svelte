@@ -1,16 +1,17 @@
-<script type="typescript">
+<script lang="ts">
 	import { browser } from "webextension-polyfill-ts";
     import { onMount } from 'svelte';
     import { slide } from 'svelte/transition';
     import { createEventDispatcher } from 'svelte';
+    import {get_db, Page} from './interfaces.ts';
 
     import Tags from "./Tags.svelte";
 
-    export let description
-    export let url
-    export let notes = ""
-    export let tags = []
-    export let suggested_tags
+    export let description: string
+    export let url: string
+    export let notes: string = ""
+    export let tags: Array<string> = []
+    export let suggested_tags: Array<string>
 
     let edit_url = false;
     let desc_input = null;
@@ -24,14 +25,9 @@
 
     function focus(x) {x.focus();}
 
-	async function get_bg_module() {
-		let bg_module = await browser.runtime.getBackgroundPage()
-		return bg_module.background
-	}
-
     async function save() {
-        let bg = await get_bg_module()
-        await bg.pages_db.upsertPage(url, (doc) => {
+        let db = await get_db()
+        await db.upsertPage(url, (doc) => {
             return {description, notes, tags}
         })
         dispatch('save', {})
@@ -49,6 +45,11 @@
         switch (e.key) {
             case 'Escape':
                 cancel()
+                break
+            case 'Enter':
+                if (e.ctrlKey) {
+                    save()
+                }
                 break
             default:
         }
@@ -106,13 +107,11 @@ textarea.expand {
 }
 
 form :global(.svelte-tags-input-tag) {
-    /* background: #1a8883 */
     background: #8c95b3;
     color: #fcfcfc;
 }
 </style>
 
-<!-- <svelte:body /> -->
 
 <form id="dialog" on:submit|preventDefault={save} on:keydown|capture={keydown} >
     <div>
@@ -132,12 +131,12 @@ form :global(.svelte-tags-input-tag) {
     </div>
 
     <div id="notes" on:input={() => expand_notes=true}>
-        <textarea placeholder="Notes" class={expand_notes?"expand":""} bind:value={notes}/>
+        <textarea placeholder="Notes" class={expand_notes?"expand":""} bind:value={notes} />
     </div>
 
     <div id="url">
         {#if edit_url}
-            <input placeholder="url://" use:focus bind:value={url}/>
+            <input placeholder="url://" use:focus bind:value={url} />
         {:else}
             <div class="input_placeholder">url: {url}</div>
             <button class="diminished" on:click={() => edit_url=true}>edit url</button>

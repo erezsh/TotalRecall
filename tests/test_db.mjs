@@ -75,15 +75,21 @@ async function test1(N=1000) {
     assert( item1.description === item1_copy3.description )
 
     // Test upsertPage
-    // item1.description = "haha"
-    // await db.upsertPage(item1)
-    // let item1_copy4 = await db.getPage(item1._id)
-    // assert( item1.description === item1_copy4.description )
+    item1.description = "haha"
+    await db.upsertPage(item1._id, (i) => item1)
+    let item1_copy4 = await db.getPage(item1._id)
+    assert( item1.description === item1_copy4.description )
 
-    // item1._id += '@test2'
-    // let item1_copy5 = await db.getPage(item1._id)
-    // assert( item1._id === item1_copy5._id )
-    // assert( item1.description === item1_copy5.description )
+    item1._id += '@test2'
+    await db.upsertPage(item1._id, (i) => item1)
+    let item1_copy5 = await db.getPage(item1._id)
+    assert( item1._id === item1_copy5._id )
+    assert( item1.description === item1_copy5.description )
+
+    let f = (i) => ({...i, description: "lala"})
+    await db.upsertPage(item1._id, f)
+    let item1_copy6 = await db.getPage(item1._id)
+    assert( item1_copy6.description === "lala" )
 
 
 

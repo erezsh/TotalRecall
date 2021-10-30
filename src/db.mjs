@@ -1,4 +1,5 @@
 import FlexSearch from 'flexsearch';
+import assert from 'assert';
 
 // import PouchAuth from 'pouchdb-authentication';
 import PouchDB from 'pouchdb';
@@ -13,6 +14,17 @@ import PouchDB from 'pouchdb';
 // import PouchDBAuth from 'pouchdb-authentication';
 // PouchDB.plugin(PouchDB_Auth);
 
+
+import {register} from './login.mjs'
+
+function get_couch_url(name, password, database) {
+    return `https://${name}:${password}@totalrecall.erezsh.com:8080/${database}`
+}
+
+const SYNC_STATUS_ITEM = 'sync_status'
+function set_sync_status(status) {
+    localStorage.setItem(SYNC_STATUS_ITEM, JSON.stringify(status))
+}
 
 
 /* 
@@ -31,18 +43,67 @@ import PouchDB from 'pouchdb';
 
 */
 
+
 class PageDB {
 
     constructor() {
         this.pouch = new PouchDB('Total Recall', {})
 
         // this.remote_pouch = new PouchDB('http://142.93.52.229:5984/_users')
-
         // let remote = new PouchDB('http://admin:couchdb@142.93.52.229:5984/pages_127001')
         // this.pouch.replicate.to(remote)
 
         this._rebuild_flex()
     }
+
+    cancel_sync() {
+        if (this.syncHandler) {
+            console.log("Cancelling sync")
+            this.syncHandler.cancel()
+            set_sync_status({status: 'disabled', message: 'Sync disabled'})
+        }
+    }
+
+    sync_to_couch(url) {
+        // TODO: report replicating?
+        this.cancel_sync()
+
+        let remote = new PouchDB(url)
+        this.syncHandler = this.pouch.sync(remote, {
+          live: true,
+          retry: true
+        }).on('change', function (change) {
+          // yo, something changed!
+          console.log("Replication changed", change)
+          set_sync_status({status: 'ok', message: 'Syncing...'})
+        }).on('paused', function (info) {
+          // replication was paused, usually because of a lost connection
+          console.log("Replication paused", info)
+          set_sync_status({status: 'ok', message: 'Synced'})
+        }).on('active', function (info) {
+          // replication was resumed
+          console.log("Replication active", info)
+        }).on('error', function (err) {
+          // totally unhandled error (shouldn't happen)
+          console.error("Replication failed", err)
+          set_sync_status({status: 'error', message: 'Sync failed! ' + err})
+        });
+
+        // this.pouch.replicate.to(remote)
+    }
+
+    async sync_to_main_server(name, password) {
+        if (!name || !password) {
+            return set_sync_status({status: 'error', message: "Name and password are required"})
+        }
+        let res = await register(name, password)
+        if (res.status === 'ok') {
+            let url = get_couch_url(name, password, res.database)
+            this.sync_to_couch(url)
+        }
+        set_sync_status({status: res.status, message: res.message})
+    }
+
 
     //
     // FlexSearch access functions
@@ -136,15 +197,17 @@ class PageDB {
         return await this.pouch.put({...page, _rev: current_page._rev})
     }
 
-    // async upsertPage(url, make_new_page) {
-    //     let page = await this.getPage(url)
-    //     let new_page = make_new_page(page)
-    //     if (page) {
-    //         return await this.updatePage({...page, ...new_page})
-    //     } else {
-    //         return await this.addPage(url, new_page)
-    //     }
-    // }
+    async upsertPage(url, make_new_page) {
+        let page = await this.getPage(url)
+        let new_page = make_new_page(page)
+        assert(typeof new_page === 'object')
+        if (page) {
+            // XXX Inefficient, we getPage twice
+            return await this.updatePage({...page, ...new_page})
+        } else {
+            return await this.addPage(url, new_page)
+        }
+    }
 
     async deletePage(url) {
         let page = await this.getPage(url)

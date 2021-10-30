@@ -3,12 +3,40 @@ import browser from "webextension-polyfill";
 
 console.log("Background page loaded")
 
-browser.commands.onCommand.addListener(function(command) {
-    let page = 'find.html'
-    browser.tabs.create({'url': browser.runtime.getURL(page)})
-    console.log('Command:', command);
 
-});
+const SYNC_CONFIG_ITEM = 'sync_config'
+
+
+let sync_config = JSON.parse(localStorage.getItem(SYNC_CONFIG_ITEM))
+function apply_sync_config() {
+    console.log("###", sync_config)
+    switch (sync_config.sync_target) {
+        case "None":
+            db.cancel_sync()
+            break
+        case "CustomCouch":
+            db.sync_to_couch(sync_config.custom_couch_url)
+            break
+        case "MainServer":
+            db.sync_to_main_server(sync_config.main_server_user, sync_config.main_server_pass)
+            break
+        default:
+            console.error("Bad sync target!!", sync_config)
+    }
+}
+
+window.addEventListener('storage', function(event){
+    if (event.storageArea === localStorage) {
+        if (event.key === 'sync_config') {
+            sync_config = JSON.parse(event.newValue)
+            apply_sync_config()
+
+        }
+    }
+}, false);
+
+apply_sync_config()
+
 
 
 
@@ -204,4 +232,13 @@ async function handleActivated(info) {
 console.log("Adding handler")
 browser.tabs.onUpdated.addListener(handleUpdated);
 browser.tabs.onActivated.addListener(handleActivated)
+
+browser.commands.onCommand.addListener(function(command) {
+    let page = 'find.html'
+    browser.tabs.create({'url': browser.runtime.getURL(page)})
+    console.log('Command:', command);
+
+});
+
+// apply_sync_config()
 
