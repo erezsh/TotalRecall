@@ -1,0 +1,58 @@
+  {
+    "manifest_version": 2,
+
+    "name": "Total Recall",
+    "version": "0.0.1",
+    "description": "Always remember where you've been",
+    "author": "Erez Shinan",
+    "homepage_url": "http://erezsh.com",
+
+    "permissions": [
+        "tabs",
+        "activeTab"
+    ],
+    "optional_permissions": [
+        "bookmarks",
+        "*://*/*"
+    ],
+    "browser_action": {
+        "browser_style": true,
+        "default_icon": {
+          "16": "images/star-h-16.png",
+          "32": "images/star-h-32.png",
+          "48": "images/star-h-48.png",
+          "128": "images/star-h-128.png"
+        },
+        "default_title": "Mark for easy find",
+        "default_popup": "edit.html"
+    },
+    "icons": {
+      "16": "images/star-16.png",
+      "32": "images/star-32.png",
+      "48": "images/star-48.png",
+      "128": "images/star-128.png"
+    },
+    "background": {
+      "scripts": ["build/background.js"],
+      "persistent": false
+    },
+    "options_page": "conf.html",
+
+
+    "commands": {
+      "add_bookmark": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+F",
+          "windows": "Ctrl+Shift+F"
+        },
+        "description": "Find bookmark"
+      },
+      "_execute_page_action": {
+        "suggested_key": {
+          "default": "Alt+Shift+K",
+          "windows": "Alt+Shift+K"
+        },
+        "description": "Bookmark current page"
+      }
+    }
+  }
