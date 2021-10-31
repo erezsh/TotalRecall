@@ -66,6 +66,8 @@ class PageDB {
 
     sync_to_couch(url) {
         // TODO: report replicating?
+        let self = this
+
         this.cancel_sync()
 
         set_sync_status({status: 'disabled', message: 'Attempting to connect...'})
@@ -82,6 +84,7 @@ class PageDB {
           // replication was paused, usually because of a lost connection
           console.log("Replication paused", info)
           set_sync_status({status: 'ok', message: 'Synced'})
+          self._rebuild_flex()
         }).on('active', function (info) {
           // replication was resumed
           console.log("Replication active", info)

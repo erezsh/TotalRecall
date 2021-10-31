@@ -9,7 +9,8 @@
 
     "permissions": [
         "tabs",
-        "activeTab"
+        "activeTab",
+        "https://totalrecall.erezsh.com/"
     ],
     "optional_permissions": [
         "bookmarks",
@@ -36,9 +37,10 @@
       "scripts": ["build/background.js"],
       "persistent": false
     },
-    "options_page": "conf.html",
-
-
+    "options_ui": {
+      "page": "conf.html",
+      "browser_style": true
+    },
     "commands": {
       "add_bookmark": {
         "suggested_key": {

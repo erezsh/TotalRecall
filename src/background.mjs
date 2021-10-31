@@ -9,7 +9,6 @@ const SYNC_CONFIG_ITEM = 'sync_config'
 
 let sync_config = JSON.parse(localStorage.getItem(SYNC_CONFIG_ITEM))
 function apply_sync_config() {
-    console.log("###", sync_config)
     switch (sync_config.sync_target) {
         case "None":
             db.cancel_sync()
@@ -35,7 +34,7 @@ window.addEventListener('storage', function(event){
     }
 }, false);
 
-apply_sync_config()
+if (sync_config) apply_sync_config()
 
 
 
