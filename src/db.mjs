@@ -18,7 +18,7 @@ import PouchDB from 'pouchdb';
 import {register} from './login.mjs'
 
 function get_couch_url(name, password, database) {
-    return `https://${name}:${password}@totalrecall.erezsh.com:8080/${database}`
+    return `https://${name}:${encodeURIComponent(password)}@totalrecall.erezsh.com:8080/${database}`
 }
 
 const SYNC_STATUS_ITEM = 'sync_status'
@@ -68,10 +68,12 @@ class PageDB {
         // TODO: report replicating?
         this.cancel_sync()
 
+        set_sync_status({status: 'disabled', message: 'Attempting to connect...'})
+
         let remote = new PouchDB(url)
         this.syncHandler = this.pouch.sync(remote, {
           live: true,
-          retry: true
+          // retry: true
         }).on('change', function (change) {
           // yo, something changed!
           console.log("Replication changed", change)
@@ -83,19 +85,20 @@ class PageDB {
         }).on('active', function (info) {
           // replication was resumed
           console.log("Replication active", info)
+          set_sync_status({status: 'ok', message: 'Syncing...'})
         }).on('error', function (err) {
           // totally unhandled error (shouldn't happen)
           console.error("Replication failed", err)
           set_sync_status({status: 'error', message: 'Sync failed! ' + err})
         });
 
-        // this.pouch.replicate.to(remote)
     }
 
     async sync_to_main_server(name, password) {
         if (!name || !password) {
             return set_sync_status({status: 'error', message: "Name and password are required"})
         }
+        set_sync_status({status: 'disabled', message: 'Attempting to register...'})
         let res = await register(name, password)
         if (res.status === 'ok') {
             let url = get_couch_url(name, password, res.database)

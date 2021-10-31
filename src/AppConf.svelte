@@ -5,6 +5,8 @@
     import { saveAs } from 'file-saver';
     import { writable } from 'svelte-local-storage-store'
 
+    import Button from '@smui/button';
+
     const sync_config = writable<SyncConfig>('sync_config', {sync_target: "null"})
     const sync_status = writable<SyncConfig>('sync_status', {status: "disabled"})
 
@@ -124,7 +126,14 @@
 
         <h4>Sync status:</h4>
 
-        {$sync_status.status} -- {$sync_status.message}
+        {#if $sync_status.status == 'ok'}
+            <i class="material-icons" style="color: lime">wifi_tethering</i>
+        {:else if $sync_status.status == 'disabled'}
+            <i class="material-icons" style="color: silver">wifi_tethering_off</i>
+        {:else if $sync_status.status == 'error'}
+            <i class="material-icons" style="color: red">wifi_tethering_error</i>
+        {/if}
+        {$sync_status.message}
 
         <h4>Sync target:</h4>
 
@@ -137,16 +146,20 @@
         {#if $sync_config.sync_target == SyncTarget.MainServer}
             <div class="inner_dialog">
                 <h5>Login details for free server:</h5>
-                <label>username: <input type="text" bind:value={main_server_user} required /></label>
-                <label>password: <input type="password" bind:value={main_server_pass} required /></label>
-                <button on:click={save_main_server}>Save</button>
+                <form on:submit|preventDefault={save_main_server}>
+                    <label>username: <input type="text" bind:value={main_server_user} required /></label>
+                    <label>password: <input type="password" bind:value={main_server_pass} required /></label>
+                    <button type="submit">Save</button>
+                </form>
                 (registration is automatic)
             </div>
         {:else if $sync_config.sync_target == SyncTarget.CustomCouch}
             <div class="inner_dialog">
                 <h5>URL for custom CouchDB:</h5>
-                <label>URL: <input type="url" bind:value={custom_couch_url}/></label>
-                <button on:click={save_custom_couch}>Save</button>
+                <form on:submit|preventDefault={save_custom_couch}>
+                    <label>URL: <input type="url" bind:value={custom_couch_url} required placeholder="http://mycouch.com:5984/db" /></label>
+                    <button type="submit">Save</button>
+                </form>
             </div>
         {/if}
 
