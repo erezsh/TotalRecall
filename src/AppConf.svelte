@@ -18,14 +18,42 @@
     let bookmark_import_done = false
     let bookmark_import_count = 0
 
+    let files
+    let import_json_result
+
     async function export_bookmarks() {
         let db = await get_db()
         let pages = await db.allPages()
-        let json = JSON.stringify(pages, null, 2)
-        console.log(json)
+        let json = JSON.stringify({app: "totalrecall", version: '1', data: pages}, null, 2)
         var file = new File([json], "total_recall_backup.json", {type: "application/json"});
         saveAs(file);
     }
+
+    async function import_json_file(f) {
+        let json = JSON.parse(await f.text())
+        if (json.app != 'totalrecall' || json.version != '1') {
+            import_json_result = {status: 'error', message: "Bad file format or version!"}
+            console.log("CC", f)
+            return
+        }
+
+        let rows = json.data
+        console.log(`Importing ${rows.length} rows from file ${f.name}`)
+
+        let db = await get_db()
+        await db.addPages(rows)
+        import_json_result = {status: 'ok', message: `imported ${rows.length} pages`}
+    }
+
+    function handle_files_changed() {
+        if (files && files.length) {
+            import_json_file(files[0]).then()
+        }
+        files = null
+    }
+
+    $: files, handle_files_changed()
+
 
     export async function import_browser_bookmarks()
     {
@@ -65,6 +93,17 @@
         console.log('Done with bookmarks import...')
         bookmark_import_done = true
     }
+
+    let delete_all_pages_result = ""
+    async function delete_all_pages() {
+        let res = confirm("Do you really want to delete all your pages??\n\nThis operation is difficult to reverse!")
+        if (res) {
+            let db = await get_db()
+            await db.deleteAllPages()
+            delete_all_pages_result = "Deleted!"
+        }
+    }
+
 
     async function request_page_access() {
         let r = await browser.permissions.request({origins: ["*://*/*"]})
@@ -187,7 +226,30 @@
             <h3>To/from JSON</h3>
             <button on:click={export_bookmarks}>Export bookmarks as JSON</button>
             <br/>
-            <button disabled={true}>Import JSON of bookmarks</button>
+            <button>
+                <label class="custom-file-upload">
+                    <input type="file" bind:files hidden />
+                    Import JSON of bookmarks
+                </label>
+            </button>
+            {#if import_json_result}
+                <span class={import_json_result.status}>
+                <i class="material-icons">{import_json_result.status}</i>
+                </span>
+                {import_json_result.message}
+            {/if}
+
+
+        </div>
+    </section>
+
+
+    <section>
+        <h2>Advanced</h2>
+        <div>
+            <h3>Destroy</h3>
+            <button on:click={delete_all_pages}>Delete all pages!</button>
+            {delete_all_pages_result}
         </div>
     </section>
     </div>

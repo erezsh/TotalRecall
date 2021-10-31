@@ -130,9 +130,10 @@ class PageDB {
             }
         });
 
-
         let docs = await this.pouch.allDocs({include_docs:true})
         let rows = docs.rows.filter(x => x.doc.starred)        // only index starred pages, for performance reasons
+        if (!rows.length) return
+
         console.log('Building search index for ' + rows.length + ' pages.')
         let i = 0;
         for (let d of rows) {
@@ -222,6 +223,12 @@ class PageDB {
         return false
     }
 
+    async deleteAllPages() {
+        let docs = await this.pouch.allDocs({include_docs:false})
+        let to_delete = docs.rows.map( (r) => ({_id: r.id, _rev:r.value.rev, _deleted: true}))
+        await this.pouch.bulkDocs(to_delete)
+        await this._rebuild_flex()
+    }
 
     _includes_all_tags(r, tags) {
         let tags_str = r.tags_str.toUpperCase()
@@ -284,7 +291,7 @@ class PageDB {
     async destroy() {
         await this.pouch.destroy()
         this.pouch = new PouchDB('Total Recall', {})
-        this._rebuild_flex()
+        await this._rebuild_flex()
     }
 
 
@@ -295,7 +302,17 @@ class PageDB {
 
     async allPages() {
         let docs = await this.pouch.allDocs({include_docs:true})
-        return docs.rows.map( (item) => item.doc)
+        let pages = docs.rows.map( (item) => item.doc)
+        // Remove revisions, since they are not relevant for this API, and can get it the way.
+        for (let page of pages) {
+            delete page._rev
+        }
+        return pages
+    }
+
+    async addPages(pages) {
+        await this.pouch.bulkDocs(pages)
+        await this._rebuild_flex()
     }
 
     async getOrNewPage(url, defaults) {

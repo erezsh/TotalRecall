@@ -92,10 +92,21 @@ async function test1(N=1000) {
     assert( item1_copy6.description === "lala" )
 
 
+    // Test deleteAllPages
+    await db.deleteAllPages()
+    assert( await db.count() === 0 )
+
+    // Test addPages
+    await db.addPages(all)
+    assert( all.length === await db.count() )
+
+
+
 
 }
 
 async function cleanup() {
+    console.log("[!] Destroying")
     await db.destroy()
 }
 

@@ -119,3 +119,10 @@ button.default {
   /* Support for IE. */
   font-feature-settings: 'liga';
 }
+
+.error {
+	color: red;
+}
+.ok {
+	color: green;
+}

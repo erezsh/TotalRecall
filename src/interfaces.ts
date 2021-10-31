@@ -28,6 +28,8 @@ interface PagesDB {
 
     replicate_to_couch(url: string)
     replicate_to_auth_server(name: string, password: string)
+    deleteAllPages()
+    addPages(pages: Array<Page>)
 }
 
 interface BackgroundPage {
