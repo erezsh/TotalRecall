@@ -115,7 +115,6 @@ async function extractTabMeta(tab) {
 
 
 async function handleUpdated(tabId, changeInfo, tab) {
-    try{
     // Gets called every time a tab is updated
 
     // TODO log previous URL in page.visits
@@ -188,11 +187,6 @@ async function handleUpdated(tabId, changeInfo, tab) {
         }
 
     }
-
-} catch (e) {
-    console.error("AAAA", e)
-    console.trace()
-}
 }
 
 export function get_browser() {
@@ -211,7 +205,6 @@ async function install_page_content_script(tab_id) {
 
 
 async function handleActivated(info) {
-    try{
     let tab
     try {
         tab = await browser.tabs.get(info.tabId);
@@ -222,10 +215,6 @@ async function handleActivated(info) {
     }
     let page = await db.getPage(tab.url)
     update_icon(tab.id, page)
-} catch(e) {
-    console.error("AAAA", e)
-    console.trace()
-}
 }
 
 console.log("Adding handler")
@@ -239,5 +228,8 @@ browser.commands.onCommand.addListener(function(command) {
 
 });
 
-// apply_sync_config()
+window.addEventListener("unhandledrejection", (event, promise) => {
+  console.warn(`UNHANDLED PROMISE REJECTION`, event.reason, promise);
+});
+
 

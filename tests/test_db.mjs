@@ -105,6 +105,15 @@ async function test1(N=1000) {
 
 }
 
+async function test2() {
+    assert(await db.count() === 0)
+    await db.addPage("https://www.erezsh.com/", {description: "Erez Shinan's website", starred: true, tags: ["test", "test2"]})
+    assert(await db.count() === 1)
+
+    let res = await db.search("shinan")
+    console.log(res)
+}
+
 async function cleanup() {
     console.log("[!] Destroying")
     await db.destroy()
@@ -112,7 +121,8 @@ async function cleanup() {
 
 async function test_all() {
     try {
-        await test1()
+        // await test1()
+        await test2()
     } finally {
         await cleanup()
     }

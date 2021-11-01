@@ -100,6 +100,9 @@
 			<p style="color: red">{error.message}</p>
 		{/await}
 	</div>
+	<div>
+		<a href="conf.html">conf</a>
+	</div>
 
 	{#if edit_mode}
 	<button on:click={()=>edit_mode=false}>Back to search</button>
