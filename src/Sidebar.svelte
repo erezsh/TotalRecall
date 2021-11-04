@@ -8,6 +8,7 @@
 <style>
 li {
     margin-bottom: 5px;
+    white-space: nowrap;
 }
 
 ul {
@@ -18,6 +19,7 @@ ul {
 .sidebar {
     padding: 10px;
     max-width: 400px;
+    overflow-x: clip;
 }
 
 </style>

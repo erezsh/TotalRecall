@@ -1,6 +1,7 @@
 <script lang="ts">
     import browser from "webextension-polyfill";
-    import {get_db, get_bg_module, SyncTarget} from './interfaces.ts';
+    import {get_db, get_bg_module, SyncTarget, SyncConfig, SyncStatus, GeneralConfig} from './interfaces.ts';
+    import Tags from "./Tags.svelte";
 
     import { saveAs } from 'file-saver';
     import { writable } from 'svelte-local-storage-store'
@@ -8,7 +9,13 @@
     import Button from '@smui/button';
 
     const sync_config = writable<SyncConfig>('sync_config', {sync_target: "null"})
-    const sync_status = writable<SyncConfig>('sync_status', {status: "disabled"})
+    const sync_status = writable<SyncStatus>('sync_status', {status: "disabled"})
+    const general_config = writable<GeneralConfig>('general_config', {sidebar_tags: []})
+
+    function handleTags(event) {
+        $general_config.sidebar_tags = event.detail.tags;
+    }
+    let sidebar_tags: Array<string> = $general_config.sidebar_tags
 
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -202,6 +209,21 @@
             </div>
         {/if}
 
+    </section>
+
+    <section class="section">
+        <h2>Customize</h2>
+        <div>
+            <h3>Tags to show in main page</h3>
+            <Tags
+                placeholder="Choose tags"
+                onlyUnique={true}
+                addKeys={[9, 188]}
+                on:tags={handleTags}
+                tags={sidebar_tags}
+            />
+
+        </div>
     </section>
 
     <section>

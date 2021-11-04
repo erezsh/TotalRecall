@@ -6,6 +6,9 @@
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
 	import {get_db, Page} from './interfaces.ts';
+    import { writable } from 'svelte-local-storage-store'
+
+    const general_config = writable<GeneralConfig>('general_config', {sidebar_tags: []})
 
 	let search_input;
 
@@ -39,7 +42,7 @@
 	async function get_sidebars() {
 		let db = await get_db()
 		let sidebars = []
-		for (let tag of ['todo', 'to watch'])
+		for (let tag of $general_config.sidebar_tags)
 		{
 			sidebars.push({
 				name: tag,

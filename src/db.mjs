@@ -116,20 +116,30 @@ class PageDB {
     //
 
     async _rebuild_flex() {
-        this.flex = new FlexSearch({
-            encode: "advanced",
+        this.flex = new FlexSearch.Document({
+            // encode: "advanced",
             tokenize: "full",
-            suggest: true,
-            cache: true,
-            doc: {
+            // worker: true,
+            // suggest: true,
+            // cache: true,
+            document: {
                 id: "_id",
-                field: [
+                index: [
                     "_id",
                     "description",
                     "notes",
-                    "tags_str",
+                    "tags",
                 ],
-                tag: "starred"
+                store: [
+                    "_id",
+                    "description",
+                    "notes",
+                    "tags",
+                    "starred",
+                    "created",
+                    "updated",
+                ],
+                // tag: "tags"
             }
         });
 
@@ -154,23 +164,22 @@ class PageDB {
             _id: url,
             description: attrs.description,
             notes: attrs.notes,
-            tags_str: attrs.tags?attrs.tags.join(','):'',
+            // tags_str: attrs.tags?attrs.tags.join(','):'',
+            tags: attrs.tags,
             starred: attrs.starred,
             ...attrs
         }
 
-        if (this.flex.find('url', url)) {
-            this.flex.update([search_data])
+        if (this.flex.contain(url)) {
+            this.flex.update(search_data)
         } else {
-            this.flex.add([search_data])
+            this.flex.add(search_data)
         }
     }
 
     _del_flex(url) {
         console.debug("Removing url from flex:", url)
-        let page = this.flex.find(url)
-        this.flex.remove(page)
-        console.debug("done")
+        this.flex.remove(url)
     }
 
     //
@@ -234,7 +243,7 @@ class PageDB {
     }
 
     _includes_all_tags(r, tags) {
-        let tags_str = r.tags_str.toUpperCase()
+        let tags_str = r.tags.join(' ').toUpperCase()
         for (let tag of tags) {
             if (!tags_str.includes(tag.toUpperCase())) {
                 return false
@@ -255,18 +264,22 @@ class PageDB {
     }
 
     _search(words, tags, exclude, only_starred) {
-        let results = null
-        if (tags.length && !words.length) {
-            results = this.flex.where({})
-        } else {
-            results = this.flex.search(words.join(' '), {
-                where: only_starred?{"starred": true}:{},
-                // limit: 100
-            })
-        }
-        console.debug("Search for ", words, "returned:", results.length, "initial results ---- options:", tags, exclude, only_starred)
+        let results = this.flex.search(words.concat(tags).join(' '), {
+                limit: Infinity,
+                enrich: true,
+                // tag: tags
+        })
 
-        return results
+        let docs = {}
+        for (let r of results) {
+            for (let d of r.result) {
+                docs[d.id] = d.doc
+            }
+        }
+
+        console.debug("Search for ", words, "returned:", docs.length) //, "initial results ---- options:", tags, exclude, only_starred)
+
+        return Object.values(docs)
                 .filter((r) => this._includes_all_tags(r, tags))
                 .filter((r) => this._not_includes_excluded(r, exclude))
     }

@@ -6,11 +6,25 @@ export enum SyncTarget {
   CustomCouch = "CustomCouch",
 }
 
+export enum SyncStatusEnum {
+	Ok = "ok",
+	Disabled = "disabled",
+	Error = "error",
+}
+
 interface SyncConfig {
     sync_target: SyncTarget
     main_server_user?: string
     main_server_pass?: string
     custom_couch_url?: string
+}
+
+interface SyncStatus {
+	status: SyncStatusEnum
+}
+
+interface GeneralConfig {
+	sidebar_tags: Array<string>
 }
 
 interface Page {

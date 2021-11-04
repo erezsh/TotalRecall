@@ -4,7 +4,7 @@ import _ from 'lodash';
 import {db} from '../src/db.mjs'
 
 
-async function test1(N=1000) {
+async function test1(N=2000) {
     console.log("Testing with", N, "rows")
     for (let i=0; i<N; i++) {
         let options = {tags: ['test']}
@@ -15,7 +15,7 @@ async function test1(N=1000) {
         await db.addPage('reddit.com/'+i, {description: ''+i, ...options})
     }
 
-    assert(await db.count() == 1000)
+    assert(await db.count() === N)
 
     // Test sanity + search
     let item43 = await db.search('reddit 43')[0]
@@ -26,22 +26,24 @@ async function test1(N=1000) {
     assert(item101.description == '101')
     assert(item101.starred)
 
-    let item0 = await db.search("commm/")[0]
+    // let item0 = await db.search("commm/")[0]
+    let item0 = await db.search("com")[0]
     assert(item0.description == '0')
 
     assert( await db.search("commmx").length == 0 )
 
-    assert( await db.search("reddit").length == 1000 )
-    assert( await db.search("#test").length == 1000 )
-    assert( await db.search("#test -999").length == 999 )
+    assert( await db.search("reddit").length == N )
+    assert( await db.search("#test").length == N )
+    assert( await db.search("#test -999").length == N - (N/1000) )
     assert( await db.search("#test2").length == 0 )
 
     // Test deletePage 
     await db.deletePage(item0._id)
-    let item1 = await db.search("commm/")[0]
+    // let item1 = await db.search("commm/")[0]
+    let item1 = await db.search("com")[0]
     assert(item1.description == '1')
 
-    assert(await db.count() == 999)
+    assert(await db.count() == N-1)
 
     // Test getPage 
     let item1_copy = await db.getPage(item1._id)
@@ -106,12 +108,21 @@ async function test1(N=1000) {
 }
 
 async function test2() {
-    assert(await db.count() === 0)
-    await db.addPage("https://www.erezsh.com/", {description: "Erez Shinan's website", starred: true, tags: ["test", "test2"]})
-    assert(await db.count() === 1)
+    // assert(await db.count() === 0)
+    // await db.addPage("https://www.erezsh.com/", {description: "Erez Shinan's website", starred: true, tags: ["test", "test2"]})
+    // assert(await db.count() === 1)
 
-    let res = await db.search("shinan")
+    // let res = await db.search("shinan")
+
+    await db.flex.add({_id:"bla2", description: 'hello', starred: true, tags: ["aa", "bb"]})
+    await db.flex.add({_id:"bla3", description: 'hello world', starred: true, tags: ["airplane"]})
+    await db.flex.add({_id:"hello", description: 'world', starred: true})
+    await db.flex.add({_id:"bye", description: 'world', starred: true})
+
+    // let res = await db.search('Airplan', {enrich: true})
+    let res = await db.search(null, {enrich: true})
     console.log(res)
+    // console.log(db.flex.get('bla2'))
 }
 
 async function cleanup() {
@@ -121,8 +132,8 @@ async function cleanup() {
 
 async function test_all() {
     try {
-        // await test1()
-        await test2()
+        await test1()
+        // await test2()
     } finally {
         await cleanup()
     }
