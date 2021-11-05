@@ -5,7 +5,7 @@
 	import SearchList from './SearchList.svelte'
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
-	import {get_db, Page} from './interfaces.ts';
+	import {get_db, Page, get_suggested_tags} from './interfaces.ts';
     import { writable } from 'svelte-local-storage-store'
 
     const general_config = writable<GeneralConfig>('general_config', {sidebar_tags: []})
@@ -35,7 +35,6 @@
 		let db = await get_db()
 		return await db.count()
 	}
-
 
 	function focus(x) {x.focus()}
 
@@ -108,22 +107,28 @@
 	</div>
 
 	{#if edit_mode}
-	<button on:click={()=>edit_mode=false}>Back to search</button>
-	<div id="edit_area">
-		{#each edit_items as page}
-		<div class="edit_item">
-			<EditDialog
-				description={page.description}
-				url={page._id}
-				notes={page.notes || ''}
-				tags={page.tags || []}
-				suggested_tags={["do!", "watch!", "read!", "play!", "listen!"]}
-				on:save={() => {save_edit_item(page)}}
-				on:cancel={() => {close_edit_item(page)}}
-			/>
+		{#await get_suggested_tags()}
+			Getting tag suggestions...
+		{:then suggested_tags}
+		<button on:click={()=>edit_mode=false}>Back to search</button>
+		<div id="edit_area">
+			{#each edit_items as page}
+			<div class="edit_item">
+				<EditDialog
+					description={page.description}
+					url={page._id}
+					notes={page.notes || ''}
+					tags={page.tags || []}
+					suggested_tags={suggested_tags}
+					on:save={() => {save_edit_item(page)}}
+					on:cancel={() => {close_edit_item(page)}}
+				/>
+			</div>
+			{/each}
 		</div>
-		{/each}
-	</div>
+		{:catch error}
+			<p style="color: red">{error.message}</p>
+		{/await}
 	{:else}
 	<div id="search">
 		<div id="search_bar">

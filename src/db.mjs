@@ -53,6 +53,7 @@ class PageDB {
         // let remote = new PouchDB('http://admin:couchdb@142.93.52.229:5984/pages_127001')
         // this.pouch.replicate.to(remote)
 
+        this.tags = []
         this._rebuild_flex()
     }
 
@@ -119,6 +120,7 @@ class PageDB {
         this.flex = new FlexSearch.Document({
             // encode: "advanced",
             tokenize: "full",
+            bool: "or",
             // worker: true,
             // suggest: true,
             // cache: true,
@@ -157,6 +159,8 @@ class PageDB {
             }
         }
         console.debug("Search index built.")
+
+        this.tags = new Set([].concat.apply([], docs.rows.map(x => x.doc.tags)))
     }
 
     _add_flex(url, attrs) {
@@ -175,6 +179,7 @@ class PageDB {
         } else {
             this.flex.add(search_data)
         }
+        this.tags = new Set([...this.tags, attrs.tags])
     }
 
     _del_flex(url) {
@@ -243,6 +248,9 @@ class PageDB {
     }
 
     _includes_all_tags(r, tags) {
+        if (!r.tags) {
+            return false
+        }
         let tags_str = r.tags.join(' ').toUpperCase()
         for (let tag of tags) {
             if (!tags_str.includes(tag.toUpperCase())) {
@@ -263,8 +271,14 @@ class PageDB {
         return true
     }
 
+
     _search(words, tags, exclude, only_starred) {
-        let results = this.flex.search(words.concat(tags).join(' '), {
+        // The following line won't work. See: https://github.com/nextapps-de/flexsearch/issues/285
+        // let search_str = words.concat(tags).join(' ')
+
+        let search_str = (words.length ? words : tags).join(' ')
+
+        let results = this.flex.search(search_str, {
                 limit: Infinity,
                 enrich: true,
                 // tag: tags
@@ -277,7 +291,7 @@ class PageDB {
             }
         }
 
-        console.debug("Search for ", words, "returned:", docs.length) //, "initial results ---- options:", tags, exclude, only_starred)
+        console.debug("Search for ", search_str, "returned:", docs.length) //, "initial results ---- options:", tags, exclude, only_starred)
 
         return Object.values(docs)
                 .filter((r) => this._includes_all_tags(r, tags))

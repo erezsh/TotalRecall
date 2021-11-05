@@ -2,7 +2,7 @@
 	import browser from "webextension-polyfill";
 
 	import EditDialog from './EditDialog.svelte';
-	import {get_db, Page, get_bg_module} from './interfaces.ts';
+	import {get_db, Page, get_bg_module, get_suggested_tags} from './interfaces.ts';
 	
 	async function get_tab() {
 		let tabs = await browser.tabs.query({active: true, currentWindow: true})
@@ -83,15 +83,22 @@
 				<h1> Edit bookmark </h1>
 			{/if}
 
+			{#await get_suggested_tags()}
+				Getting tag suggestions...
+			{:then suggested_tags}
+
 				<EditDialog
 					description={page.description}
 					url={page._id}
 					notes={page.notes || ''}
 					tags={page.tags || []}
-					suggested_tags={["do!", "watch!", "read!", "play!", "listen!"]}
+					suggested_tags={suggested_tags}
 					on:save={close}
 					on:cancel={() => {remove_star_and_close(tab, page)}}
 				/>
+			{:catch error}
+				<p style="color: red">{error.message}</p>
+			{/await}
 
 			{#if page.visit_count}
 				<h4>

@@ -98,7 +98,7 @@ function setTag(input) {
 
 function addTag(currentTag) {
 
-    currentTag = currentTag.trim();
+    currentTag = currentTag.trim().toLowerCase();
 
     if (currentTag == "") return;
     if (maxTags && tags.length == maxTags) return;
@@ -210,7 +210,7 @@ function getMatchElements(input) {
         });;
 
     if (onlyUnique === true) {
-        matchs = matchs.filter(tag => !tags.includes(tag.label));
+        matchs = matchs.filter(tag => !tags.includes(tag.label.toLowerCase()));
     }
 
     arrelementsmatch = matchs;

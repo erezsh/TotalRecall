@@ -37,6 +37,9 @@ async function test1(N=2000) {
     assert( await db.search("#test -999").length == N - (N/1000) )
     assert( await db.search("#test2").length == 0 )
 
+    assert( await db.search("reddit #test").length == N )
+    assert( await db.search("com #test").length == N )
+
     // Test deletePage 
     await db.deletePage(item0._id)
     // let item1 = await db.search("commm/")[0]

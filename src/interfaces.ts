@@ -36,6 +36,8 @@ interface Page {
 }
 
 interface PagesDB {
+	tags: Array<string>
+
 	search(s: string): Array<Page>
 	count(): number
 	getOrNewPage(url: string, defaults): Page
@@ -72,4 +74,9 @@ export async function get_bg_module(): Promise<BackgroundPage> {
 export async function get_db(): Promise<PagesDB> {
 	let bg_module = await get_bg_module()
 	return bg_module.pages_db
+}
+
+export async function get_suggested_tags(): Promise<Array<string>> {
+	let db = await get_db()
+	return [...db.tags || []].filter(x => x && x.length > 0)
 }
