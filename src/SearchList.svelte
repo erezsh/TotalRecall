@@ -24,8 +24,8 @@
     let loaded_items = []   // Used for lazy creation of HTML items
     let auto_scroll = false;
 
-    let select_anchor = 0;
-    let select_active = 0;
+    export let select_anchor;
+    export let select_active;
 
     function sort_items(items, sort_by) {
         let res = _.sortBy(items, x => {
@@ -41,10 +41,8 @@
     $: select_start = Math.min(select_anchor, select_active)
     $: select_end = Math.max(select_anchor, select_active)
 
-    $: sorted_items = sort_items(items, $general_config.sort_by)
-
     $: loaded_len = loaded_items.length
-    let res_len = items.length
+    $: res_len = items.length
 
     let _sort_by_options = {
         // relevance: "Relevance",
@@ -57,8 +55,14 @@
     }
     let sort_by_options = Object.entries(_sort_by_options).map(([a,b])=>{return {option:a, text:b}})
 
-    // let sort_by = "updated";
+    let sorted_items = []
 
+    function update_sorted_items(items) {
+        sorted_items = sort_items(items, $general_config.sort_by)
+        loaded_items = [...sorted_items.slice(0, page_size * (page+1))]
+    }
+
+    $: update_sorted_items(items)
 
     function next_page() {
         loaded_items = [
@@ -69,13 +73,15 @@
         page += 1
     }
 
-    function refresh_page() {
-        loaded_items = []
+    function sort_by_changed(e) {
+        let sort_by = e.target.value
+        sorted_items = sort_items(items, sort_by)
         page = 0
+        select_active = 0
+        select_anchor = 0
+        loaded_items = []
         next_page()
     }
-
-    $: sorted_items && refresh_page()
 
 
     function edit_items() {
@@ -162,7 +168,6 @@
                 e.preventDefault()
                 break
             case 'Delete':
-                // console.log('Delete')
                 delete_items()
                 e.preventDefault()
                 break
@@ -208,7 +213,7 @@
             <i class="material-icons">delete_forever</i>
         </Button>
 
-        <Select bind:value={$general_config.sort_by} label="Sort By:">
+        <Select bind:value={$general_config.sort_by} label="Sort By:" on:change={sort_by_changed}>
             {#each sort_by_options as {option, text}}
                 <Option value={option} selected={option == "relevance"}>{text}</Option>
             {/each}

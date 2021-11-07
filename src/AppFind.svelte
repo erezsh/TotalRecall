@@ -6,7 +6,7 @@
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
 	import {get_db, Page, get_suggested_tags, get_config} from './interfaces.ts';
-    
+
     const general_config = get_config()
 
 	let search_input;
@@ -16,13 +16,21 @@
 
 	let search: string = ""
 	let only_starred: boolean = true
-	let search_results: Array<Page> = [];
+	let search_results: Promise<Array<Page>> = [];
 	$: set_search_results(search, only_starred)
 
-	async function set_search_results(search, only_starred) {
+	let select_active
+	let select_anchor
+
+	async function set_search_results(search, only_starred, refresh=true) {
 		// Avoid the 'await' update flicker
 		let res = await get_search_results(search, only_starred)
 		search_results = new Promise( (then, except) => {then(res)})
+
+		if (refresh) {
+			select_anchor = 0
+			select_active = 0
+		}
 	}
 
 	async function get_search_results(search, only_starred) {
@@ -67,7 +75,7 @@
 			for (let item of selected) {
 				console.log('deleting ', item)
 				await db.deletePage(item._id)
-				await set_search_results(search, only_starred)
+				await set_search_results(search, only_starred, false)
 			}
 		}
 	}
@@ -165,7 +173,12 @@
 			{#await search_results}
 				...?
 			{:then r}
-				<SearchList items={r} on:edit={set_edit_mode} on:delete={delete_items}/>
+				<SearchList items={r} 
+					bind:select_active={select_active}
+					bind:select_anchor={select_anchor}
+					on:edit={set_edit_mode}
+					on:delete={delete_items}
+				/>
 			{:catch error}
 				<p style="color: red">{error.message}</p>
 			{/await}
