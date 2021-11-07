@@ -1,4 +1,6 @@
 <script>
+    import Time from "svelte-time";
+
     export let item
     export let expanded=false;
     export let auto_scroll
@@ -72,6 +74,16 @@
         background: url('/images/star-16.png')
     }
 
+    .metadata {
+        color: #999;
+        font-size: 10px;
+    }
+    .metadata i {
+        font-size: 15px;
+    }
+    .item.selected .metadata {
+        color: #666;
+    }
 </style>
 
 <div class="item" class:selected={expanded} bind:this={item_node}>
@@ -84,7 +96,22 @@
             {/each}
         </div>
     </div>
-    <div class="url"><a href={item._id}>{item._id}</a></div>
+    <div class="flex">
+        <div class="url"><a href={item._id}>{item._id}</a></div>
+        <div class="metadata">
+    <!--         @ {item.visit_count}
+            @ {item.last_visited}
+     -->        
+            {#if item.created}
+                <i class="material-icons">access_time</i> 
+                Created: <Time live relative timestamp={item.created} />
+            {/if}
+            {#if item.updated}
+                <i class="material-icons">access_time</i> 
+                Updated: <Time live relative timestamp={item.updated} />
+            {/if}
+        </div>
+    </div>
 
     <!-- {#if expanded}
         <div class="expanded">

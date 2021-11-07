@@ -1,9 +1,13 @@
-<script>
+<script lang="ts">
     import { browser } from "webextension-polyfill-ts";
     import Select, {Option} from '@smui/select';
     import Button from '@smui/button';
     import { createEventDispatcher } from 'svelte';
 	// import Dialog, {Title, Content, Actions, Label} from '@smui/dialog';
+    import _ from 'lodash/core';
+
+    import {get_config} from './interfaces.ts';
+    import { writable } from 'svelte-local-storage-store'
 
     import SearchItem from './SearchItem.svelte'
     import EditDialog from './EditDialog.svelte';
@@ -12,52 +16,80 @@
 
 	const dispatch = createEventDispatcher();
 
+    const general_config = get_config()
+
+
     let page = 0;
     let page_size = 50;
-    let loaded_items = []
+    let loaded_items = []   // Used for lazy creation of HTML items
     let auto_scroll = false;
 
     let select_anchor = 0;
     let select_active = 0;
 
+    function sort_items(items, sort_by) {
+        let res = _.sortBy(items, x => {
+            let value = x[sort_by]
+            if (sort_by === 'updated' || sort_by === 'created') {
+                return -(new Date(value).getTime())
+            }
+            return value
+        })
+        return res
+    }
+
     $: select_start = Math.min(select_anchor, select_active)
     $: select_end = Math.max(select_anchor, select_active)
+
+    $: sorted_items = sort_items(items, $general_config.sort_by)
 
     $: loaded_len = loaded_items.length
     let res_len = items.length
 
-    let sort_by = "relevance";
-
     let _sort_by_options = {
-        relevance: "Relevance",
-        visited: "Number of visits",
-        last_visit: "Last Visit",
+        // relevance: "Relevance",
+        // visit_count: "Number of visits",
+        // last_visited: "Last Visit",
         created: "Created",
         updated: "Updated",
+        _id: "URL",
+        description: "Description (Alphabetical)",
     }
     let sort_by_options = Object.entries(_sort_by_options).map(([a,b])=>{return {option:a, text:b}})
+
+    // let sort_by = "updated";
+
 
     function next_page() {
         loaded_items = [
             ...loaded_items,
-            ...items.slice(page_size * page, page_size * (page + 1))
+            ...sorted_items.slice(page_size * page, page_size * (page + 1))
         ]
 
         page += 1
     }
 
+    function refresh_page() {
+        loaded_items = []
+        page = 0
+        next_page()
+    }
+
+    $: sorted_items && refresh_page()
+
+
     function edit_items() {
-        let selected = items.slice(select_start, select_end+1)
+        let selected = sorted_items.slice(select_start, select_end+1)
         dispatch('edit', {selected})
     }
 
     function delete_items() {
-        let selected = items.slice(select_start, select_end+1)
+        let selected = sorted_items.slice(select_start, select_end+1)
         dispatch('delete', {selected})
     }
 
     function open_items(new_window, new_tab) {
-        let urls = items.slice(select_start, select_end+1).map((i)=>i._id)
+        let urls = sorted_items.slice(select_start, select_end+1).map((i)=>i._id)
         if (new_window) {
             browser.windows.create({url: urls})
         } else {
@@ -138,7 +170,7 @@
         }
 	}
 
-    next_page()
+    // next_page()
 
     let remove_dialog
 </script>
@@ -175,14 +207,8 @@
         <Button color="secondary" variant="unelevated" on:click={delete_items}>
             <i class="material-icons">delete_forever</i>
         </Button>
-		<!-- Sort by: -->
-		<!-- <div class="sort_menu">
-                <input type=radio bind:group={sort_by} value=option} id={"sort_"+option} />
-                <label for={"sort_" + option}> {text} </label>
-            {/each}
-		</div> -->
 
-        <Select bind:value={sort_by} label="Sort By:">
+        <Select bind:value={$general_config.sort_by} label="Sort By:">
             {#each sort_by_options as {option, text}}
                 <Option value={option} selected={option == "relevance"}>{text}</Option>
             {/each}
