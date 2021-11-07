@@ -39,6 +39,7 @@
     "svelte": "^3.44.0",
     "svelte-local-storage-store": "^0.2.4",
     "svelte-preprocess": "^4.9.8",
+    "svelte-time": "^0.6.0",
     "tslib": "^2.3.1",
     "typescript": "^4.4.4",
     "webextension-polyfill": "^0.8.0",

@@ -5,10 +5,9 @@
 	import SearchList from './SearchList.svelte'
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
-	import {get_db, Page, get_suggested_tags} from './interfaces.ts';
-    import { writable } from 'svelte-local-storage-store'
-
-    const general_config = writable<GeneralConfig>('general_config', {sidebar_tags: []})
+	import {get_db, Page, get_suggested_tags, get_config} from './interfaces.ts';
+    
+    const general_config = get_config()
 
 	let search_input;
 

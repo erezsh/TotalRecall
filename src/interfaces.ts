@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import { writable } from 'svelte-local-storage-store'
 
 export enum SyncTarget {
   None = "None",
@@ -12,7 +13,7 @@ export enum SyncStatusEnum {
 	Error = "error",
 }
 
-interface SyncConfig {
+export interface SyncConfig {
     sync_target: SyncTarget
     main_server_user?: string
     main_server_pass?: string
@@ -25,6 +26,7 @@ interface SyncStatus {
 
 interface GeneralConfig {
 	sidebar_tags: Array<string>
+	sort_by: string
 }
 
 interface Page {
@@ -79,4 +81,9 @@ export async function get_db(): Promise<PagesDB> {
 export async function get_suggested_tags(): Promise<Array<string>> {
 	let db = await get_db()
 	return [...db.tags || []].filter(x => x && x.length > 0)
+}
+
+export function get_config() {
+	let defaults: GeneralConfig = {sidebar_tags: [], sort_by: 'updated'}
+    return writable<GeneralConfig>('general_config', defaults)
 }
