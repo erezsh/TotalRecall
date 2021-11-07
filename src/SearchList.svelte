@@ -49,7 +49,6 @@
         let res = _.sortBy(items, x => {
             let value = x[sort_by]
             if (sort_by === 'updated' || sort_by === 'created') {
-                console.log("@@", value, typeof value)
                 return -(new Date(value).getTime())
             }
             return value
@@ -157,7 +156,6 @@
                 e.preventDefault()
                 break
             case 'Delete':
-                // console.log('Delete')
                 delete_items()
                 e.preventDefault()
                 break
@@ -173,20 +171,6 @@
 
 <ol id="search_list">
     <div id="search_toolbar">
-        <!-- <Dialog bind:this={remove_dialog} aria-labelledby="dlg-remove-title" aria-describedby="dlg-remove-content">
-            <Title id="dlg-remove-title">Remove pages from memory</Title>
-            <Content id="dlg-remove-content">
-                Do you want Total Recall to forget these pages? {items.length}
-            </Content>
-            <Actions>
-                <Button on:click={() => alert('no')}>
-                    <Label>No</Label>
-                </Button>
-                <Button on:click={() => alert('yes')}>
-                    <Label>Yes</Label>
-                </Button>
-            </Actions>
-        </Dialog> -->
 
         <Button  color="secondary" variant="unelevated" class="default" title="Open selected" on:click={()=>open_items(false)}>
             <i class="material-icons">open_in_browser</i>
@@ -201,12 +185,6 @@
         <Button color="secondary" variant="unelevated" on:click={delete_items}>
             <i class="material-icons">delete_forever</i>
         </Button>
-		<!-- Sort by: -->
-		<!-- <div class="sort_menu">
-                <input type=radio bind:group={sort_by} value=option} id={"sort_"+option} />
-                <label for={"sort_" + option}> {text} </label>
-            {/each}
-		</div> -->
 
         <Select bind:value={sort_by} label="Sort By:">
             {#each sort_by_options as {option, text}}
