@@ -36,16 +36,26 @@
         saveAs(file);
     }
 
+    function parse_date(d) {
+        return new Date(d)
+    }
+
     async function import_json_file(f) {
         let json = JSON.parse(await f.text())
         if (json.app != 'totalrecall' || json.version != '1') {
             import_json_result = {status: 'error', message: "Bad file format or version!"}
-            console.log("CC", f)
             return
         }
 
         let rows = json.data
         console.log(`Importing ${rows.length} rows from file ${f.name}`)
+
+        rows = rows.map(i => ({
+            ...i,
+            updated: parse_date(i.updated),
+            created: parse_date(i.created),
+            last_visited: parse_date(i.last_visited),
+        }))
 
         let db = await get_db()
         await db.addPages(rows)

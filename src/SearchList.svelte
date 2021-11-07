@@ -48,11 +48,15 @@
         }
         let res = _.sortBy(items, x => {
             let value = x[sort_by]
-            if (sort_by === 'updated' || sort_by === 'created') {
-                return -(new Date(value).getTime())
-            }
+            // if (sort_by === 'updated' || sort_by === 'created') {
+            //     return -(new Date(value).getTime())
+            // }
             return value
         })
+
+        if (sort_by === 'updated' || sort_by === 'created') {
+            res = res.reverse()
+        }
         return res
     }
 
