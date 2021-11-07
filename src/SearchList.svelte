@@ -65,6 +65,8 @@
         loaded_items = []
         page = 0
         next_page()
+        // We use setTimeout because otherwise svelte doesn't update the reactive dependencies
+        setTimeout(x => {select_anchor = select_active = 0}, 0)
     }
 
     function next_page() {
