@@ -92,19 +92,44 @@
 
 
 <main>
-	<h1>Find bookmarked pages</h1>
 	<div>
-		{#await get_count()}
-			Counting ...
-		{:then r}
-			<p>total: {r}</p>
-		{:catch error}
-			<p style="color: red">{error.message}</p>
-		{/await}
-	</div>
-	<div>
-		<a href="conf.html">conf</a>
-	</div>
+		<div class="spring">
+			<div class="spring">
+				<div id="glass">
+					<a href="/find.html">
+					    <i class="material-icons">search</i>
+					</a>
+				</div>
+				<div class="spring">
+					<h1>
+						Recall pages
+					</h1>
+					<div id="total">
+						(Total:
+						{#await get_count()}
+							Counting ...
+						{:then r}
+							{r}
+						{:catch error}
+							<b style="color: red">{error.message}</b>
+						{/await}
+						)
+					</div>
+				</div>
+			</div>
+			<div>
+				<a href="/conf.html">
+					<div class="spring">
+						<div id="settings-text">
+							Settings
+						</div>
+						<div id="settings-button">
+						    <i class="material-icons rotating">settings</i>
+						</div>
+					</div>
+				</a>
+			</div>
+		</div>
 
 	{#if edit_mode}
 		{#await get_suggested_tags()}
@@ -130,11 +155,12 @@
 			<p style="color: red">{error.message}</p>
 		{/await}
 	{:else}
-	<div id="search">
-		<div id="search_bar">
-			<!-- <input type="search" id="search_input" placeholder="Search" bind:value={search} use:focus /> -->
-			<input type="search" id="search_input" placeholder="Search" bind:value={search} bind:this={search_input} use:focus />
-			<!-- <label><input type="checkbox" bind:checked={only_starred} />Only Starred</label> -->
+		<div id="search">
+			<div id="search_bar">
+				<!-- <input type="search" id="search_input" placeholder="Search" bind:value={search} use:focus /> -->
+				<input type="search" id="search_input" bind:value={search} bind:this={search_input} use:focus placeholder="Enter free-text and #tags" />
+				<!-- <label><input type="checkbox" bind:checked={only_starred} />Only Starred</label> -->
+			</div>
 		</div>
 		{#if search}
 			{#await search_results}
@@ -158,7 +184,6 @@
 			</div>
 
 		{/if}
-	</div>
 	{/if}
 
 </main>
@@ -184,8 +209,10 @@ main {
 #search_input {
 	min-width: 400px;
 	height: 50px;
-	padding: 10px;
 	font-size: 18px;
+
+    padding: 20px 23px ;
+    border-radius: 16px ;
 }
 
 #search_bar {
@@ -205,5 +232,48 @@ main {
     padding: 20px;
     border-radius: 10px;
 }
+
+#glass {
+    margin-top: 10px;
+    margin-left: 16px;
+    margin-right: 4px;
+}
+
+#glass i {
+	font-size: 28px;
+} 
+
+.spring {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.h1 {
+}
+
+#total {
+	margin-left:20px;
+}
+
+#settings-text {
+    font-size: 21px;
+    margin-right: 10px;
+    color: #666;
+}
+
+#settings-button i {
+    font-size: 34px;
+    margin-right: 16px;
+}
+
+.rotating {
+  transition: transform .7s ease-in-out;
+}
+.rotating:hover {
+  transform: rotate(360deg);
+}
+
+    /* background: #eee; */
 
 </style>

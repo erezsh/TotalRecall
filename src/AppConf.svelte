@@ -144,8 +144,35 @@
 </script>
 
 
+<style>
+
+</style>
+
 <main>
-	<h1>Configuration</h1>
+    <div class="spring">
+        <div class="spring">
+            <div id="glass">
+                <a href="/conf.html">
+                    <i class="material-icons">settings</i>
+                </a>
+            </div>
+            <h1>
+                Configuration
+            </h1>
+        </div>
+        <div>
+            <a href="/find.html">
+                <div class="spring">
+                    <div id="find-text">
+                        Find
+                    </div>
+                    <div id="find-button">
+                        <i class="material-icons rotating">search</i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
 
     <div id="sections">
 
@@ -277,7 +304,3 @@
     </div>
 
 </main>
-
-<style>
-
-</style>

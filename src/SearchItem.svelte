@@ -56,8 +56,10 @@
         background: #eee;
         border-radius: 5px;
         padding: 2px 5px;
-        margin-left: 2px;
+        margin-left: 6px;
         white-space: nowrap;
+        background: #5d84ab;
+        color: #fff;
     }
     .star {
         background: url('/images/star-h-16.png');
