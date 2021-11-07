@@ -17,12 +17,14 @@
 	let search: string = ""
 	let only_starred: boolean = true
 	let search_results: Array<Page> = [];
+	let sort_by: string;
 	$: set_search_results(search, only_starred)
 
 	async function set_search_results(search, only_starred) {
 		// Avoid the 'await' update flicker
 		let res = await get_search_results(search, only_starred)
-		search_results = new Promise( (then, except) => {then(res)})
+		// search_results = new Promise( (then, except) => {then(res)})
+		search_results = res
 	}
 
 	async function get_search_results(search, only_starred) {
@@ -161,14 +163,9 @@
 				<!-- <label><input type="checkbox" bind:checked={only_starred} />Only Starred</label> -->
 			</div>
 		</div>
+		{sort_by}
 		{#if search}
-			{#await search_results}
-				...?
-			{:then r}
-				<SearchList items={r} on:edit={set_edit_mode} on:delete={delete_items}/>
-			{:catch error}
-				<p style="color: red">{error.message}</p>
-			{/await}
+			<SearchList items={search_results} bind:sort_by={sort_by} on:edit={set_edit_mode} on:delete={delete_items}/>
 		{:else}
 			<div id="sidebars">
 				{#await get_sidebars()}

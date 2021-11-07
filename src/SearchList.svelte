@@ -4,11 +4,13 @@
     import Button from '@smui/button';
     import { createEventDispatcher } from 'svelte';
 	// import Dialog, {Title, Content, Actions, Label} from '@smui/dialog';
+    import _ from 'lodash/core';
 
     import SearchItem from './SearchItem.svelte'
     import EditDialog from './EditDialog.svelte';
 
     export let items = []
+    export let sort_by = "relevance";
 
 	const dispatch = createEventDispatcher();
 
@@ -22,42 +24,67 @@
 
     $: select_start = Math.min(select_anchor, select_active)
     $: select_end = Math.max(select_anchor, select_active)
+    $: items && sort_by && refresh()
 
     $: loaded_len = loaded_items.length
-    let res_len = items.length
+    $: res_len = items.length
 
-    let sort_by = "relevance";
+    let sorted_items
 
     let _sort_by_options = {
         relevance: "Relevance",
-        visited: "Number of visits",
-        last_visit: "Last Visit",
-        created: "Created",
+        // visit_count: "Number of visits",
+        // last_visited: "Last Visit",
         updated: "Updated",
+        created: "Created",
+        description: "Description",
+        _id: "URL",
     }
     let sort_by_options = Object.entries(_sort_by_options).map(([a,b])=>{return {option:a, text:b}})
+
+    function sort_items(items, sort_by) {
+        if (sort_by === 'relevance') {
+            return items
+        }
+        let res = _.sortBy(items, x => {
+            let value = x[sort_by]
+            if (sort_by === 'updated' || sort_by === 'created') {
+                console.log("@@", value, typeof value)
+                return -(new Date(value).getTime())
+            }
+            return value
+        })
+        return res
+    }
+
+    function refresh() {
+        sorted_items = sort_items(items, sort_by)
+        loaded_items = []
+        page = 0
+        next_page()
+    }
 
     function next_page() {
         loaded_items = [
             ...loaded_items,
-            ...items.slice(page_size * page, page_size * (page + 1))
+            ...sorted_items.slice(page_size * page, page_size * (page + 1))
         ]
 
         page += 1
     }
 
     function edit_items() {
-        let selected = items.slice(select_start, select_end+1)
+        let selected = sorted_items.slice(select_start, select_end+1)
         dispatch('edit', {selected})
     }
 
     function delete_items() {
-        let selected = items.slice(select_start, select_end+1)
+        let selected = sorted_items.slice(select_start, select_end+1)
         dispatch('delete', {selected})
     }
 
     function open_items(new_window, new_tab) {
-        let urls = items.slice(select_start, select_end+1).map((i)=>i._id)
+        let urls = sorted_items.slice(select_start, select_end+1).map((i)=>i._id)
         if (new_window) {
             browser.windows.create({url: urls})
         } else {
@@ -138,7 +165,6 @@
         }
 	}
 
-    next_page()
 
     let remove_dialog
 </script>

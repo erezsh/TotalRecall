@@ -98,19 +98,21 @@
     </div>
     <div class="flex">
         <div class="url"><a href={item._id}>{item._id}</a></div>
+        {#if expanded}
         <div class="metadata">
     <!--         @ {item.visit_count}
             @ {item.last_visited}
      -->        
             {#if item.created}
                 <i class="material-icons">access_time</i> 
-                Created: <Time live relative timestamp={item.created} />
+                Created: <Time relative timestamp={item.created} />
             {/if}
             {#if item.updated}
                 <i class="material-icons">access_time</i> 
-                Updated: <Time live relative timestamp={item.updated} />
+                Updated: <Time relative timestamp={item.updated} />
             {/if}
         </div>
+        {/if}
     </div>
 
     <!-- {#if expanded}
