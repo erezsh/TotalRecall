@@ -2,7 +2,7 @@
     "manifest_version": 2,
 
     "name": "Total Recall",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "Always remember where you've been",
     "author": "Erez Shinan",
     "homepage_url": "http://erezsh.com",
