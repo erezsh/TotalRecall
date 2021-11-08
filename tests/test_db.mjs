@@ -55,7 +55,7 @@ async function test1(N=2000) {
     assert( item1.notes === item1_copy.notes )
     assert( _.isEqual( item1.tags, item1_copy.tags ))
     assert( item1.starred === item1_copy.starred )
-    assert( item1.created.toISOString() === item1_copy.created )    // TODO make all dates strings?
+    assert( item1.created === item1_copy.created )    // TODO make all dates strings?
 
     // Test getOrNewPage
     let defaults = {description: "lala", tags:['haha']}
