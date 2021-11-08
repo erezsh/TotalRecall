@@ -169,8 +169,6 @@
         }
 	}
 
-
-    let remove_dialog
 </script>
 
 <svelte:body on:keydown={keydown} />

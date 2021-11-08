@@ -6,6 +6,7 @@
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
 	import {get_db, Page, get_suggested_tags, get_search_config} from './interfaces.ts';
+
     
     const search_config = get_search_config()
 

@@ -1,5 +1,8 @@
 <script>
     import Time from "svelte-time";
+    import Button from '@smui/button';
+
+    import Share from './Share.svelte'
 
     export let item
     export let expanded=false;
@@ -12,6 +15,11 @@
 
     $: expanded && item_node && auto_scroll && item_node.scrollIntoView({block: "center"})
 
+
+    let show_share_buttons = false
+    function toggle_share_buttons() {
+        show_share_buttons = !show_share_buttons
+    }
 </script>
 
 <style>
@@ -111,7 +119,17 @@
                 <i class="material-icons">access_time</i> 
                 Updated: <Time relative timestamp={item.updated} />
             {/if}
+
+            <a on:click={toggle_share_buttons}>
+                <i class="material-icons">share</i>
+            </a>
+
+            {#if show_share_buttons}
+                <Share url={item._id} title={item.description} desc={item.notes} tags={item.tags} />
+            {/if}
         </div>
+
+
         {/if}
     </div>
 
