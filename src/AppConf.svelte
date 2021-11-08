@@ -37,10 +37,6 @@
         saveAs(file);
     }
 
-    function parse_date(d) {
-        return new Date(d)
-    }
-
     async function import_json_file(f) {
         let json = JSON.parse(await f.text())
         if (json.app != 'totalrecall' || json.version != '1') {
@@ -53,9 +49,9 @@
 
         rows = rows.map(i => ({
             ...i,
-            updated: parse_date(i.updated),
-            created: parse_date(i.created),
-            last_visited: parse_date(i.last_visited),
+            updated: (i.updated),
+            created: (i.created),
+            last_visited: (i.last_visited),
         }))
 
         let db = await get_db()

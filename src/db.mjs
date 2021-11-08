@@ -27,6 +27,22 @@ function set_sync_status(status) {
 }
 
 
+function now() {
+    return (new Date()).toISOString()
+}
+
+function parse_date(d) {
+    if (d === undefined) {
+        return null
+    }
+    d = new Date(d)
+    if (isNaN(d.getTime())) {
+        return null
+    }
+    return d
+}
+
+
 /* 
    PageDB maintains a persistent and fast index of pages.
 
@@ -171,6 +187,9 @@ class PageDB {
             // tags_str: attrs.tags?attrs.tags.join(','):'',
             tags: attrs.tags,
             starred: attrs.starred,
+            updated: parse_date(attrs.updated),
+            created: parse_date(attrs.created),
+            last_visited: parse_date(attrs.last_visited),
             ...attrs
         }
 
@@ -195,7 +214,8 @@ class PageDB {
     async addPage(url, attrs) {
         let doc = {
             _id: url,
-            created: new Date(),
+            created: now(),
+            updated: now(),
             ...attrs
         }
 
@@ -212,7 +232,7 @@ class PageDB {
     }
 
     async updatePage(page) {
-        page.updated = new Date()
+        page.updated = now()
         this._add_flex(page._id, page)
         let current_page = await this.getPage(page._id)
         return await this.pouch.put({...page, _rev: current_page._rev})
