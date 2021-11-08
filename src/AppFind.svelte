@@ -19,11 +19,11 @@
 	let search_results: Array<Page> = [];
 	$: set_search_results(search, only_starred)
 
-	async function set_search_results(search, only_starred) {
+	async function set_search_results(search, only_starred, shuffled=true) {
 		// Avoid the 'await' update flicker
 		let res = await get_search_results(search, only_starred)
 		// search_results = new Promise( (then, except) => {then(res)})
-		search_results = res
+		search_results = {items: res, shuffled}
 	}
 
 	async function get_search_results(search, only_starred) {
@@ -68,7 +68,7 @@
 			for (let item of selected) {
 				console.log('deleting ', item)
 				await db.deletePage(item._id)
-				await set_search_results(search, only_starred)
+				await set_search_results(search, only_starred, false)
 			}
 		}
 	}
@@ -163,7 +163,13 @@
 			</div>
 		</div>
 		{#if search}
-			<SearchList items={search_results} bind:sort_by={$search_config.sort_by} on:edit={set_edit_mode} on:delete={delete_items}/>
+			<SearchList
+				items={search_results.items}
+				items_shuffled={search_results.shuffled} 
+				bind:sort_by={$search_config.sort_by} 
+				on:edit={set_edit_mode} 
+				on:delete={delete_items}
+			/>
 		{:else}
 			<div id="sidebars">
 				{#await get_sidebars()}

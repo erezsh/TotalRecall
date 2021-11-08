@@ -11,6 +11,7 @@
     import EditDialog from './EditDialog.svelte';
 
     export let items = []
+    export let items_shuffled = false
     export let sort_by = SortByEnum.Relevance;
 
 	const dispatch = createEventDispatcher();
@@ -33,7 +34,6 @@
     let sorted_items
 
     let sort_by_options = Object.entries(SortByEnum).map(([text, option]) => {return {option, text}})
-    console.log(sort_by_options)
 
     function sort_items(items, sort_by) {
         if (sort_by === SortByEnum.Relevance) {
@@ -56,10 +56,17 @@
     function refresh() {
         sorted_items = sort_items(items, sort_by)
         loaded_items = []
-        page = 0
-        next_page()
-        // We use setTimeout because otherwise svelte doesn't update the reactive dependencies
-        setTimeout(x => {select_anchor = select_active = 0}, 0)
+
+        if (items_shuffled) {
+            page = 0
+            // We use setTimeout because otherwise svelte doesn't update the reactive dependencies
+            setTimeout(x => {select_anchor = select_active = 0}, 0)
+
+            next_page()
+        } else {
+            loaded_items = [ ...sorted_items.slice(0, page_size * (page + 1)) ]
+            setTimeout(x => {select_anchor = select_active = select_start}, 0)
+        }
     }
 
     function next_page() {
