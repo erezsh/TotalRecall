@@ -6,7 +6,6 @@ A cross-browser bookmarking and quick-launch extension for power users.
 - Synchronize your bookmarks across browsers
 - Support for tags
 
-
 ## Features
 
 - Full-text search + tags search using hashtag syntax (`#mytag`)
@@ -27,7 +26,7 @@ A cross-browser bookmarking and quick-launch extension for power users.
 	- Press `Escape` to cancel bookmark
 
 - Press `Ctrl+Shift+F` to open search, and start typing!
-	- Navigate the results using `Up`/`Down`/`Page Up`/`Page Down`/`Home`/`End` 
+	- Navigate the results using `Up`/`Down`/`Page Up`/`Page Down`/`Home`/`End`
 	- Press `Enter` to go to selected page(s)
 	- Press `Ctrl+Enter` to open the selected pages in new tabs
 	- Press `Shift+Enter` to open the selected pages in a new window
@@ -47,3 +46,6 @@ There are two replication options:
 - **Sync to custom CouchDB** - Will sync to any CouchDB that has a public URL.
 	- CouchDB databases are very easy to set up. (We highly recommend [Caddy](https://caddyserver.com/) as an SSL front).
 
+## Screenshot
+
+![Screenshot](screenshot1.png)
