@@ -69,13 +69,13 @@
         }
     }
 
-    function next_page() {
+    function next_page(page_count=1) {
         loaded_items = [
             ...loaded_items,
-            ...sorted_items.slice(page_size * page, page_size * (page + 1))
+            ...sorted_items.slice(page_size * page, page_size * (page + page_count))
         ]
 
-        page += 1
+        page += page_count
     }
 
     function edit_items() {
@@ -121,7 +121,7 @@
         }
 
         if (new_index >= loaded_len) {
-            next_page()
+            next_page(Math.floor((new_index-loaded_len) / page_size + 1))
         }
 
         select_active = new_index
