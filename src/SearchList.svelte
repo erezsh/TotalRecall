@@ -1,16 +1,17 @@
-<script>
+<script lang="ts">
     import { browser } from "webextension-polyfill-ts";
     import Select, {Option} from '@smui/select';
     import Button from '@smui/button';
     import { createEventDispatcher } from 'svelte';
 	// import Dialog, {Title, Content, Actions, Label} from '@smui/dialog';
     import _ from 'lodash/core';
+    import {SortByEnum} from './interfaces.ts'
 
     import SearchItem from './SearchItem.svelte'
     import EditDialog from './EditDialog.svelte';
 
     export let items = []
-    export let sort_by = "relevance";
+    export let sort_by = SortByEnum.Relevance;
 
 	const dispatch = createEventDispatcher();
 
@@ -31,19 +32,11 @@
 
     let sorted_items
 
-    let _sort_by_options = {
-        relevance: "Relevance",
-        // visit_count: "Number of visits",
-        // last_visited: "Last Visit",
-        updated: "Updated",
-        created: "Created",
-        description: "Description",
-        _id: "URL",
-    }
-    let sort_by_options = Object.entries(_sort_by_options).map(([a,b])=>{return {option:a, text:b}})
+    let sort_by_options = Object.entries(SortByEnum).map(([text, option]) => {return {option, text}})
+    console.log(sort_by_options)
 
     function sort_items(items, sort_by) {
-        if (sort_by === 'relevance') {
+        if (sort_by === SortByEnum.Relevance) {
             return items
         }
         let res = _.sortBy(items, x => {
@@ -54,7 +47,7 @@
             return value
         })
 
-        if (sort_by === 'updated' || sort_by === 'created') {
+        if (sort_by === SortByEnum.Updated || sort_by === SortByEnum.Created) {
             res = res.reverse()
         }
         return res
@@ -184,7 +177,8 @@
         <Button color="secondary" variant="unelevated" on:click={()=>open_items(true)}>
             <i class="material-icons">open_in_new</i>
         </Button>
-        *
+        &nbsp;
+        &nbsp;
         <Button color="secondary" variant="unelevated" on:click={edit_items}>
             <i class="material-icons">edit</i>
         </Button>
@@ -194,7 +188,7 @@
 
         <Select bind:value={sort_by} label="Sort By:">
             {#each sort_by_options as {option, text}}
-                <Option value={option} selected={option == "relevance"}>{text}</Option>
+                <Option value={option} selected={option === sort_by}>{text}</Option>
             {/each}
         </Select>
         -- {res_len} results

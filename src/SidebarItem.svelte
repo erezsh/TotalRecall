@@ -10,10 +10,6 @@
 
 <style>
 
-li > input {
-    vertical-align: sub;
-}
-
 a {
     font-size: 14px;
     margin-left: 6px;

@@ -5,9 +5,9 @@
 	import SearchList from './SearchList.svelte'
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
-	import {get_db, Page, get_suggested_tags, get_config} from './interfaces.ts';
+	import {get_db, Page, get_suggested_tags, get_search_config} from './interfaces.ts';
     
-    const general_config = get_config()
+    const search_config = get_search_config()
 
 	let search_input;
 
@@ -17,7 +17,6 @@
 	let search: string = ""
 	let only_starred: boolean = true
 	let search_results: Array<Page> = [];
-	let sort_by: string;
 	$: set_search_results(search, only_starred)
 
 	async function set_search_results(search, only_starred) {
@@ -42,7 +41,7 @@
 	async function get_sidebars() {
 		let db = await get_db()
 		let sidebars = []
-		for (let tag of $general_config.sidebar_tags)
+		for (let tag of $search_config.sidebar_tags)
 		{
 			sidebars.push({
 				name: tag,
@@ -163,9 +162,8 @@
 				<!-- <label><input type="checkbox" bind:checked={only_starred} />Only Starred</label> -->
 			</div>
 		</div>
-		{sort_by}
 		{#if search}
-			<SearchList items={search_results} bind:sort_by={sort_by} on:edit={set_edit_mode} on:delete={delete_items}/>
+			<SearchList items={search_results} bind:sort_by={$search_config.sort_by} on:edit={set_edit_mode} on:delete={delete_items}/>
 		{:else}
 			<div id="sidebars">
 				{#await get_sidebars()}
@@ -243,9 +241,6 @@ main {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-}
-
-.h1 {
 }
 
 #total {

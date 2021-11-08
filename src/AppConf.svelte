@@ -1,6 +1,6 @@
 <script lang="ts">
     import browser from "webextension-polyfill";
-    import {get_db, get_bg_module, SyncTarget, SyncConfig, SyncStatus, get_config} from './interfaces.ts';
+    import {get_db, get_bg_module, SyncTarget, SyncConfig, SyncStatus, get_search_config} from './interfaces.ts';
     import Tags from "./Tags.svelte";
 
     import { saveAs } from 'file-saver';
@@ -10,12 +10,13 @@
 
     const sync_config = writable<SyncConfig>('sync_config', {sync_target: "null"})
     const sync_status = writable<SyncStatus>('sync_status', {status: "disabled"})
-    const general_config = get_config()
+
+    const search_config = get_search_config()
 
     function handleTags(event) {
-        $general_config.sidebar_tags = event.detail.tags;
+        $search_config.sidebar_tags = event.detail.tags;
     }
-    let sidebar_tags: Array<string> = $general_config.sidebar_tags
+    let sidebar_tags: Array<string> = $search_config.sidebar_tags
 
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));

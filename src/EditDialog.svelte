@@ -57,10 +57,6 @@
 </script>
 
 <style scoped>
-h1 {
-    text-align: center;
-    color: #111;
-}
 
 #dialog {
     padding: 0 5px;

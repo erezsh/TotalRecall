@@ -13,6 +13,14 @@ export enum SyncStatusEnum {
 	Error = "error",
 }
 
+export enum SortByEnum {
+    Relevance = "relevance",
+    Updated = "updated",
+    Created = "created",
+    Description = "description",
+    Url = "_id",
+}
+
 export interface SyncConfig {
     sync_target: SyncTarget
     main_server_user?: string
@@ -83,7 +91,7 @@ export async function get_suggested_tags(): Promise<Array<string>> {
 	return [...db.tags || []].filter(x => x && x.length > 0)
 }
 
-export function get_config() {
-	let defaults: GeneralConfig = {sidebar_tags: [], sort_by: 'updated'}
-    return writable<GeneralConfig>('general_config', defaults)
+export function get_search_config() {
+	let defaults: GeneralConfig = {sidebar_tags: [], sort_by: SortByEnum.Relevance}
+    return writable<GeneralConfig>('search_config', defaults)
 }
