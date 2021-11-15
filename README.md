@@ -46,6 +46,17 @@ There are two replication options:
 - **Sync to custom CouchDB** - Will sync to any CouchDB that has a public URL.
 	- CouchDB databases are very easy to set up. (We highly recommend [Caddy](https://caddyserver.com/) as an SSL front).
 
+
+## How to build?
+
+If you want to build the extension yourself, just clone it and run:
+
+```bash
+	npm run build
+```
+
+The files will be written into the `public` directory.
+
 ## Screenshot
 
 ![Screenshot](screenshot1.png)

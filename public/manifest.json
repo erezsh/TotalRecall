@@ -5,7 +5,7 @@
     "version": "0.1.1",
     "description": "Bookmarks & Quicklaunch for power-users",
     "author": "Erez Shinan",
-    "homepage_url": "http://erezsh.com",
+    "homepage_url": "https://github.com/erezsh/TotalRecall/",
 
     "permissions": [
         "tabs",
