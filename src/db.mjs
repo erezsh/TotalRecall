@@ -70,6 +70,7 @@ class PageDB {
         // this.pouch.replicate.to(remote)
 
         this.tags = []
+        this._flags = {rebuild_flex: false}
         this._rebuild_flex()
     }
 
@@ -83,7 +84,7 @@ class PageDB {
 
     sync_to_couch(url) {
         // TODO: report replicating?
-        let self = this
+        let flags = this._flags
 
         this.cancel_sync()
 
@@ -101,7 +102,7 @@ class PageDB {
           // replication was paused, usually because of a lost connection
           console.log("Replication paused", info)
           set_sync_status({status: 'ok', message: 'Synced'})
-          self._rebuild_flex()
+          flags.rebuild_flex = true
         }).on('active', function (info) {
           // replication was resumed
           console.log("Replication active", info)
@@ -264,7 +265,7 @@ class PageDB {
         let docs = await this.pouch.allDocs({include_docs:false})
         let to_delete = docs.rows.map( (r) => ({_id: r.id, _rev:r.value.rev, _deleted: true}))
         await this.pouch.bulkDocs(to_delete)
-        await this._rebuild_flex()
+        this._flags.rebuild_flex = true
     }
 
     _includes_all_tags(r, tags) {
@@ -319,6 +320,11 @@ class PageDB {
     }
 
     search(phrase, only_starred=false) {
+        if (this._flags.rebuild_flex) {
+            this._rebuild_flex()
+            this._flags.rebuild_flex = false
+        }
+
         console.debug("Searching:", phrase)
         if (!phrase) {
             return []
@@ -362,7 +368,7 @@ class PageDB {
 
     async addPages(pages) {
         await this.pouch.bulkDocs(pages)
-        await this._rebuild_flex()
+        this._flags.rebuild_flex = true
     }
 
     async getOrNewPage(url, defaults) {

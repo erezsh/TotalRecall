@@ -143,6 +143,17 @@ export default [
 		watch
 	},
 	{
+		input: 'src/intro.ts',
+		output: {
+			sourcemap: true,
+			format: 'iife',
+			name: 'find',
+			file: 'public/build/intro.js'
+		},
+		plugins: [_svelte('intro'), typescript(), ...plugins],
+		watch
+	},
+	{
 		input: 'src/background.mjs',
 		output: {
 			sourcemap: true,

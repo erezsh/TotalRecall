@@ -5,6 +5,7 @@ console.log("Background page loaded")
 
 
 const SYNC_CONFIG_ITEM = 'sync_config'
+const HAS_SEEN_INTRO = 'has_seen_intro'
 
 
 let sync_config = JSON.parse(localStorage.getItem(SYNC_CONFIG_ITEM))
@@ -233,3 +234,9 @@ window.addEventListener("unhandledrejection", (event, promise) => {
 });
 
 
+if (!window.localStorage.getItem(HAS_SEEN_INTRO)) {
+  window.localStorage.setItem(HAS_SEEN_INTRO, true);
+  chrome.tabs.create({
+    url: '/intro.html'
+  });
+}

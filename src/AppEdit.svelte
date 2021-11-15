@@ -69,7 +69,6 @@
 </script>
 
 <main>
-	<!-- <h2>Count is {$timer}</h2> -->
 	{#await get_tab()}
 		<p>...waiting</p>
 	{:then tab}
