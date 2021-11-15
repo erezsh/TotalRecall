@@ -70,11 +70,14 @@
 
 <main>
 	{#await get_tab()}
-		<p>...waiting</p>
+		<p>Getting tab...</p>
 	{:then tab}
 		<button class="diminished" style="float:right" on:click={() => remove(tab)}>remove</button>
 
-		{#await get_page(tab) then page}
+		{#await get_page(tab)}
+			<p>Checking database...</p>
+			<br/>
+		{:then page}
 			{#if page._just_created}
 				<h1> Create bookmark </h1>
 				<h4> First visit! </h4>

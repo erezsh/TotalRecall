@@ -86,9 +86,19 @@ export async function get_db(): Promise<PagesDB> {
 	return bg_module.pages_db
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export async function get_suggested_tags(): Promise<Array<string>> {
 	let db = await get_db()
-	return [...db.tags || []].filter(x => x && x.length > 0)
+
+	while (db.tags === null) {
+		console.debug("Waiting for tags to load")
+		await sleep(100)
+	}
+
+	return [...db.tags]
 }
 
 export function get_search_config() {

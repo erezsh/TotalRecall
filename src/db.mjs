@@ -69,7 +69,7 @@ class PageDB {
         // let remote = new PouchDB('http://admin:couchdb@142.93.52.229:5984/pages_127001')
         // this.pouch.replicate.to(remote)
 
-        this.tags = []
+        this.tags = null
         this._flags = {rebuild_flex: false}
         this._rebuild_flex()
     }
@@ -163,13 +163,16 @@ class PageDB {
         });
 
         let docs = await this.pouch.allDocs({include_docs:true})
+        let tags_concat = [].concat.apply([], docs.rows.map(x => x.doc.tags))
+        this.tags = new Set(tags_concat.filter(x => x && (typeof x === 'string') && x.length > 0))     // throw away duplicates and bad values
+
         let rows = docs.rows.filter(x => x.doc.starred)        // only index starred pages, for performance reasons
         if (!rows.length) return
 
         console.log('Building search index for ' + rows.length + ' pages.')
         let i = 0;
         for (let d of rows) {
-            this._add_flex(d.id, d.doc)     // Todo optimize?
+            this._add_flex(d.id, d.doc, false)     // Todo optimize?
             i += 1;
             if (i % 1000 == 0) {
                 console.debug('Built ' + Math.round(i*100/rows.length) + "%")
@@ -177,10 +180,9 @@ class PageDB {
         }
         console.debug("Search index built.")
 
-        this.tags = new Set([].concat.apply([], docs.rows.map(x => x.doc.tags)))
     }
 
-    _add_flex(url, attrs) {
+    _add_flex(url, attrs, update_tags=true) {
         let search_data = {
             _id: url,
             description: attrs.description,
@@ -199,7 +201,10 @@ class PageDB {
         } else {
             this.flex.add(search_data)
         }
-        this.tags = new Set([...this.tags, attrs.tags])
+
+        if (update_tags) {
+            this.tags = new Set([...this.tags || [], ...attrs.tags || []])
+        }
     }
 
     _del_flex(url) {
