@@ -2,8 +2,8 @@
     "manifest_version": 2,
 
     "name": "Total Recall",
-    "version": "0.1.0",
-    "description": "Always remember where you've been",
+    "version": "0.1.1",
+    "description": "Bookmarks & Quicklaunch for power-users",
     "author": "Erez Shinan",
     "homepage_url": "http://erezsh.com",
 
@@ -50,8 +50,8 @@
       },
       "_execute_page_action": {
         "suggested_key": {
-          "default": "Alt+Shift+K",
-          "windows": "Alt+Shift+K"
+          "default": "Ctrl+Shift+K",
+          "windows": "Ctrl+Shift+K"
         },
         "description": "Bookmark current page"
       }

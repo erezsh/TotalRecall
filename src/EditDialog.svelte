@@ -135,7 +135,8 @@ form :global(.svelte-tags-input-tag) {
             <input placeholder="url://" use:focus bind:value={url} />
         {:else}
             <div class="input_placeholder">url: {url}</div>
-            <button class="diminished" on:click={() => edit_url=true}>edit url</button>
+<!--             <button class="diminished" on:click={() => edit_url=true}>edit url</button>
+ -->            
         {/if}
     </div>
 

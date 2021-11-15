@@ -51,6 +51,7 @@ function isSupportedProtocol(urlString) {
 }
 
 function setIcon(tab_id, marked) {
+  // console.log("* Setting icon on", tab_id)
   browser.browserAction.setIcon({
     path: marked ? {
         "16": "images/star-16.png",
@@ -146,6 +147,7 @@ async function handleUpdated(tabId, changeInfo, tab) {
 
     let page = await db.getPage(tab.url)
     
+    // console.log("@@@@ handleUpdated:", tab)
     update_icon(tab.id, page)
 
     // Only edit pages that have already been recorded
@@ -215,6 +217,7 @@ async function handleActivated(info) {
         return
     }
     let page = await db.getPage(tab.url)
+    // console.log("@@@@ handleActivated:", tab)
     update_icon(tab.id, page)
 }
 
@@ -229,8 +232,8 @@ browser.commands.onCommand.addListener(function(command) {
 
 });
 
-window.addEventListener("unhandledrejection", (event, promise) => {
-  console.warn(`UNHANDLED PROMISE REJECTION`, event.reason, promise);
+window.addEventListener("unhandledrejection", event => {
+  console.warn(`UNHANDLED PROMISE REJECTION`, event.reason, event.promise);
 });
 
 

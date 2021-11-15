@@ -241,7 +241,10 @@ class PageDB {
         page.updated = now()
         this._add_flex(page._id, page)
         let current_page = await this.getPage(page._id)
-        return await this.pouch.put({...page, _rev: current_page._rev})
+        if (current_page) {
+            page = {...page, _rev: current_page._rev}
+        }
+        return await this.pouch.put(page)
     }
 
     async upsertPage(url, make_new_page) {
