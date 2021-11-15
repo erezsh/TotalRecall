@@ -48,7 +48,7 @@ interface Page {
 interface PagesDB {
 	tags: Array<string>
 
-	search(s: string): Array<Page>
+	search(s: string): Promise<Array<Page>>
 	count(): number
 	getOrNewPage(url: string, defaults): Page
 

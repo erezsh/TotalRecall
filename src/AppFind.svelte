@@ -46,7 +46,7 @@
 		{
 			sidebars.push({
 				name: tag,
-				items: db.search('#'+tag)
+				items: await db.search('#'+tag)
 			})
 		}
 		return sidebars;

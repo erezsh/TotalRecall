@@ -18,32 +18,32 @@ async function test1(N=2000) {
     assert(await db.count() === N)
 
     // Test sanity + search
-    let item43 = await db.search('reddit 43')[0]
+    let item43 = (await db.search('reddit 43'))[0]
     assert(item43.description == '43')
     assert(!item43.starred)
 
-    let item101 = await db.search("reddit 101")[0]
+    let item101 = (await db.search("reddit 101"))[0]
     assert(item101.description == '101')
     assert(item101.starred)
 
     // let item0 = await db.search("commm/")[0]
-    let item0 = await db.search("com")[0]
+    let item0 = (await db.search("com"))[0]
     assert(item0.description == '0')
 
-    assert( await db.search("commmx").length == 0 )
+    assert( (await db.search("commmx")).length == 0 )
 
-    assert( await db.search("reddit").length == N )
-    assert( await db.search("#test").length == N )
-    assert( await db.search("#test -999").length == N - (N/1000) )
-    assert( await db.search("#test2").length == 0 )
+    assert( (await db.search("reddit")).length == N )
+    assert( (await db.search("#test")).length == N )
+    assert( (await db.search("#test -999")).length == N - (N/1000) )
+    assert( (await db.search("#test2")).length == 0 )
 
-    assert( await db.search("reddit #test").length == N )
-    assert( await db.search("com #test").length == N )
+    assert( (await db.search("reddit #test")).length == N )
+    assert( (await db.search("com #test")).length == N )
 
     // Test deletePage 
     await db.deletePage(item0._id)
     // let item1 = await db.search("commm/")[0]
-    let item1 = await db.search("com")[0]
+    let item1 = (await db.search("com"))[0]
     assert(item1.description == '1')
 
     assert(await db.count() == N-1)

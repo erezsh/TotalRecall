@@ -327,16 +327,18 @@ class PageDB {
                 .filter((r) => this._not_includes_excluded(r, exclude))
     }
 
-    search(phrase, only_starred=false) {
+    async search(phrase, only_starred=false) {
+        if (!phrase) {
+            return []
+        }
+
         if (this._flags.rebuild_flex) {
-            this._rebuild_flex()
+            await this._rebuild_flex()
             this._flags.rebuild_flex = false
         }
 
         console.debug("Searching:", phrase)
-        if (!phrase) {
-            return []
-        }
+
         let elems = []
         let tags = []
         let exclude = []
