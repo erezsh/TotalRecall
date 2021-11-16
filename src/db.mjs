@@ -42,6 +42,9 @@ function parse_date(d) {
     return d
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /* 
    PageDB maintains a persistent and fast index of pages.
@@ -59,81 +62,15 @@ function parse_date(d) {
 
 */
 
-
-class PageDB {
-
-    constructor() {
-        this.pouch = new PouchDB('Total Recall', {})
-
-        // this.remote_pouch = new PouchDB('http://142.93.52.229:5984/_users')
-        // let remote = new PouchDB('http://admin:couchdb@142.93.52.229:5984/pages_127001')
-        // this.pouch.replicate.to(remote)
-
+class FlexWrapper {
+    constructor(docs) {
         this.tags = null
-        this._flags = {rebuild_flex: false}
-        this._rebuild_flex()
+        this.ready = false
+        this._rebuild_flex(docs)
     }
 
-    cancel_sync() {
-        if (this.syncHandler) {
-            console.log("Cancelling sync")
-            this.syncHandler.cancel()
-            set_sync_status({status: 'disabled', message: 'Sync disabled'})
-        }
-    }
+    async _rebuild_flex(docs) {
 
-    sync_to_couch(url) {
-        // TODO: report replicating?
-        let flags = this._flags
-
-        this.cancel_sync()
-
-        set_sync_status({status: 'disabled', message: 'Attempting to connect...'})
-
-        let remote = new PouchDB(url)
-        this.syncHandler = this.pouch.sync(remote, {
-          live: true,
-          // retry: true
-        }).on('change', function (change) {
-          // yo, something changed!
-          console.log("Replication changed", change)
-          set_sync_status({status: 'ok', message: 'Syncing...'})
-        }).on('paused', function (info) {
-          // replication was paused, usually because of a lost connection
-          console.log("Replication paused", info)
-          set_sync_status({status: 'ok', message: 'Synced'})
-          flags.rebuild_flex = true
-        }).on('active', function (info) {
-          // replication was resumed
-          console.log("Replication active", info)
-          set_sync_status({status: 'ok', message: 'Syncing...'})
-        }).on('error', function (err) {
-          // totally unhandled error (shouldn't happen)
-          console.error("Replication failed", err)
-          set_sync_status({status: 'error', message: 'Sync failed! ' + err})
-        });
-
-    }
-
-    async sync_to_main_server(name, password) {
-        if (!name || !password) {
-            return set_sync_status({status: 'error', message: "Name and password are required"})
-        }
-        set_sync_status({status: 'disabled', message: 'Attempting to register...'})
-        let res = await register(name, password)
-        if (res.status === 'ok') {
-            let url = get_couch_url(name, password, res.database)
-            this.sync_to_couch(url)
-        }
-        set_sync_status({status: res.status, message: res.message})
-    }
-
-
-    //
-    // FlexSearch access functions
-    //
-
-    async _rebuild_flex() {
         this.flex = new FlexSearch.Document({
             // encode: "advanced",
             tokenize: "full",
@@ -162,7 +99,6 @@ class PageDB {
             }
         });
 
-        let docs = await this.pouch.allDocs({include_docs:true})
         let tags_concat = [].concat.apply([], docs.rows.map(x => x.doc.tags))
         this.tags = new Set(tags_concat.filter(x => x && (typeof x === 'string') && x.length > 0))     // throw away duplicates and bad values
 
@@ -172,7 +108,7 @@ class PageDB {
         console.log('Building search index for ' + rows.length + ' pages.')
         let i = 0;
         for (let d of rows) {
-            this._add_flex(d.id, d.doc, false)     // Todo optimize?
+            this.add_page(d.id, d.doc, false)     // Todo optimize?
             i += 1;
             if (i % 1000 == 0) {
                 console.debug('Built ' + Math.round(i*100/rows.length) + "%")
@@ -180,10 +116,10 @@ class PageDB {
         }
         console.debug("Search index built.")
 
-        this._flags.rebuild_flex = false
+        this.ready = true
     }
 
-    _add_flex(url, attrs, update_tags=true) {
+    add_page(url, attrs, update_tags=true) {
         let search_data = {
             _id: url,
             description: attrs.description,
@@ -208,74 +144,12 @@ class PageDB {
         }
     }
 
-    _del_flex(url) {
+    del_page(url) {
         console.debug("Removing url from flex:", url)
         this.flex.remove(url)
     }
 
-    //
-    // Public interface
-    //
 
-    // Attrs: title, tags, marked, content; Okay if page already exists
-    async addPage(url, attrs) {
-        let doc = {
-            _id: url,
-            created: now(),
-            updated: now(),
-            ...attrs
-        }
-
-        this._add_flex(url, doc)
-
-        try {
-            let res = await this.pouch.put(doc)
-            doc._rev = res.rev
-        } catch(err) {
-            console.error("Error in addPage:", err)
-        }
-
-        return doc
-    }
-
-    async updatePage(page) {
-        page.updated = now()
-        this._add_flex(page._id, page)
-        let current_page = await this.getPage(page._id)
-        if (current_page) {
-            page = {...page, _rev: current_page._rev}
-        }
-        return await this.pouch.put(page)
-    }
-
-    async upsertPage(url, make_new_page) {
-        let page = await this.getPage(url)
-        let new_page = make_new_page(page)
-        assert(typeof new_page === 'object')
-        if (page) {
-            // XXX Inefficient, we getPage twice
-            return await this.updatePage({...page, ...new_page})
-        } else {
-            return await this.addPage(url, new_page)
-        }
-    }
-
-    async deletePage(url) {
-        let page = await this.getPage(url)
-        if (page) {
-            this._del_flex(page._id)
-            await this.pouch.remove(page)
-            return true
-        }
-        return false
-    }
-
-    async deleteAllPages() {
-        let docs = await this.pouch.allDocs({include_docs:false})
-        let to_delete = docs.rows.map( (r) => ({_id: r.id, _rev:r.value.rev, _deleted: true}))
-        await this.pouch.bulkDocs(to_delete)
-        this._flags.rebuild_flex = true
-    }
 
     _includes_all_tags(r, tags) {
         if (!r.tags) {
@@ -301,8 +175,7 @@ class PageDB {
         return true
     }
 
-
-    _search(words, tags, exclude, only_starred) {
+    search(words, tags, exclude, only_starred) {
         // The following line won't work. See: https://github.com/nextapps-de/flexsearch/issues/285
         // let search_str = words.concat(tags).join(' ')
 
@@ -328,13 +201,186 @@ class PageDB {
                 .filter((r) => this._not_includes_excluded(r, exclude))
     }
 
+}
+
+
+class PageDB {
+
+    constructor() {
+        this.pouch = new PouchDB('Total Recall', {})
+
+        // this.remote_pouch = new PouchDB('http://142.93.52.229:5984/_users')
+        // let remote = new PouchDB('http://admin:couchdb@142.93.52.229:5984/pages_127001')
+        // this.pouch.replicate.to(remote)
+
+        this._flex = {building_flex: false}
+    }
+
+    cancel_sync() {
+        if (this.syncHandler) {
+            console.log("Cancelling sync")
+            this.syncHandler.cancel()
+            set_sync_status({status: 'disabled', message: 'Sync disabled'})
+        }
+    }
+
+    sync_to_couch(url) {
+        // TODO: report replicating?
+        let _flex = this._flex
+
+        this.cancel_sync()
+
+        set_sync_status({status: 'disabled', message: 'Attempting to connect...'})
+
+        let remote = new PouchDB(url)
+        this.syncHandler = this.pouch.sync(remote, {
+          live: true,
+          // retry: true
+        }).on('change', function (change) {
+          // yo, something changed!
+          console.log("Replication changed", change)
+          set_sync_status({status: 'ok', message: 'Syncing...'})
+          _flex._flex = null   // invalidate flex
+        }).on('paused', function (info) {
+          // replication was paused, usually because of a lost connection
+          console.log("Replication paused", info)
+          set_sync_status({status: 'ok', message: 'Synced'})
+        }).on('active', function (info) {
+          // replication was resumed
+          console.log("Replication active", info)
+          set_sync_status({status: 'ok', message: 'Syncing...'})
+        }).on('error', function (err) {
+          // totally unhandled error (shouldn't happen)
+          console.error("Replication failed", err)
+          set_sync_status({status: 'error', message: 'Sync failed! ' + err})
+        });
+
+    }
+
+    async sync_to_main_server(name, password) {
+        if (!name || !password) {
+            return set_sync_status({status: 'error', message: "Name and password are required"})
+        }
+        set_sync_status({status: 'disabled', message: 'Attempting to register...'})
+        let res = await register(name, password)
+        if (res.status === 'ok') {
+            let url = get_couch_url(name, password, res.database)
+            this.sync_to_couch(url)
+        }
+        set_sync_status({status: res.status, message: res.message})
+    }
+
+
+
+    async get_flex() {
+        if (this._flex._flex) {
+            return this._flex._flex
+        }
+
+        if (this._flex.building_flex) {
+            for (let i=0; i<10; i++) {
+                if (this._flex.building_flex) {
+                    await sleep(100)
+                }
+            }
+
+            if (this._flex.building_flex) {
+                console.warn("Flex didn't finish building in 1 sec. Lock timeout.")
+                this._flex.building_flex = false
+            }
+        }
+
+        if (this._flex._flex) {
+            return this._flex._flex
+        }
+
+        this._flex.building_flex = true
+        try {
+            let docs = await this.pouch.allDocs({include_docs:true})
+            this._flex._flex = new FlexWrapper(docs)
+        } finally {
+            this._flex.building_flex = false
+        }
+
+        return this._flex._flex
+    }
+
+
+    invalidate_flex() {
+        this._flex = null
+    }
+
+    //
+    // Public interface
+    //
+
+    // Attrs: title, tags, marked, content; Okay if page already exists
+    async addPage(url, attrs) {
+        let doc = {
+            _id: url,
+            created: now(),
+            updated: now(),
+            ...attrs
+        }
+
+        let flex = await this.get_flex()
+        flex.add_page(url, doc)
+
+        try {
+            let res = await this.pouch.put(doc)
+            doc._rev = res.rev
+        } catch(err) {
+            console.error("Error in addPage:", err)
+        }
+
+        return doc
+    }
+
+    async updatePage(page) {
+        page.updated = now()
+        let flex = await this.get_flex()
+        flex.add_page(page._id, page)
+        let current_page = await this.getPage(page._id)
+        if (current_page) {
+            page = {...page, _rev: current_page._rev}
+        }
+        return await this.pouch.put(page)
+    }
+
+    async upsertPage(url, make_new_page) {
+        let page = await this.getPage(url)
+        let new_page = make_new_page(page)
+        assert(typeof new_page === 'object')
+        if (page) {
+            // XXX Inefficient, we getPage twice
+            return await this.updatePage({...page, ...new_page})
+        } else {
+            return await this.addPage(url, new_page)
+        }
+    }
+
+    async deletePage(url) {
+        let page = await this.getPage(url)
+        if (page) {
+            let flex = await this.get_flex()
+            flex.del_page(page._id)
+            await this.pouch.remove(page)
+            return true
+        }
+        return false
+    }
+
+    async deleteAllPages() {
+        let docs = await this.pouch.allDocs({include_docs:false})
+        let to_delete = docs.rows.map( (r) => ({_id: r.id, _rev:r.value.rev, _deleted: true}))
+        await this.pouch.bulkDocs(to_delete)
+        this.invalidate_flex()
+    }
+
+
     async search(phrase, only_starred=false) {
         if (!phrase) {
             return []
-        }
-
-        if (this._flags.rebuild_flex) {
-            await this._rebuild_flex()
         }
 
         console.debug("Searching:", phrase)
@@ -351,13 +397,14 @@ class PageDB {
                 elems.push(elem)
             }
         }
-        return this._search(elems, tags, exclude, only_starred)
+        let flex = await this.get_flex()
+        return flex.search(elems, tags, exclude, only_starred)
     }
 
     async destroy() {
         await this.pouch.destroy()
         this.pouch = new PouchDB('Total Recall', {})
-        await this._rebuild_flex()
+        this.invalidate_flex()
     }
 
 
@@ -378,7 +425,7 @@ class PageDB {
 
     async addPages(pages) {
         await this.pouch.bulkDocs(pages)
-        this._flags.rebuild_flex = true
+        this.invalidate_flex()
     }
 
     async getOrNewPage(url, defaults) {

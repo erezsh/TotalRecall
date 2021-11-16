@@ -146,7 +146,11 @@ async function handleUpdated(tabId, changeInfo, tab) {
 
     let page = await db.getPage(tab.url)
     
-    await update_icon(tab.id, page)
+    try {
+        await update_icon(tab.id, page)
+    } catch(err) {
+        console.error(err)
+    }
 
     // Only edit pages that have already been recorded
 

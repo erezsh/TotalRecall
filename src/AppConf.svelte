@@ -18,10 +18,6 @@
     }
     let sidebar_tags: Array<string> = $search_config.sidebar_tags
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
 
     let files
     let import_json_result
