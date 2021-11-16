@@ -180,6 +180,7 @@ class PageDB {
         }
         console.debug("Search index built.")
 
+        this._flags.rebuild_flex = false
     }
 
     _add_flex(url, attrs, update_tags=true) {
@@ -334,7 +335,6 @@ class PageDB {
 
         if (this._flags.rebuild_flex) {
             await this._rebuild_flex()
-            this._flags.rebuild_flex = false
         }
 
         console.debug("Searching:", phrase)

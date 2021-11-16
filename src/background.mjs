@@ -50,9 +50,8 @@ function isSupportedProtocol(urlString) {
   return supportedProtocols.indexOf(url.protocol) != -1;
 }
 
-function setIcon(tab_id, marked) {
-  // console.log("* Setting icon on", tab_id)
-  browser.browserAction.setIcon({
+async function setIcon(tab_id, marked) {
+  await browser.browserAction.setIcon({
     path: marked ? {
         "16": "images/star-16.png",
         "32": "images/star-32.png",
@@ -83,9 +82,9 @@ function assert_attr(obj, attr) {
     }
 }
 
-export function update_icon(tab_id, page) {
+export async function update_icon(tab_id, page) {
     try {
-        setIcon(tab_id, page?Boolean(page.starred):false)
+        await setIcon(tab_id, page?Boolean(page.starred):false)
     } catch(e) {
         console.error("Could not update icon:", e)
         console.trace()
@@ -147,8 +146,7 @@ async function handleUpdated(tabId, changeInfo, tab) {
 
     let page = await db.getPage(tab.url)
     
-    // console.log("@@@@ handleUpdated:", tab)
-    update_icon(tab.id, page)
+    await update_icon(tab.id, page)
 
     // Only edit pages that have already been recorded
 
@@ -217,8 +215,7 @@ async function handleActivated(info) {
         return
     }
     let page = await db.getPage(tab.url)
-    // console.log("@@@@ handleActivated:", tab)
-    update_icon(tab.id, page)
+    await update_icon(tab.id, page)
 }
 
 console.log("Adding handler")

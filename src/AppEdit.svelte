@@ -22,7 +22,7 @@
 	async function get_page(tab): Page {
 		let bg = await get_bg_module()
 		let db = bg.pages_db
-		bg.update_icon(tab.id, {starred:true})
+		await bg.update_icon(tab.id, {starred:true})
 
 		let defaults = {description: tab.title, starred: true}
 		let [page, just_created] = await db.getOrNewPage(tab.url, defaults)
@@ -38,7 +38,7 @@
 		let bg = await get_bg_module()
 		let db = bg.pages_db
 		let deleted = await db.deletePage(tab.url)
-		bg.update_icon(tab.id, {starred: false})
+		await bg.update_icon(tab.id, {starred: false})
 		window.close()
 	}
 
@@ -48,7 +48,7 @@
 			let bg = await get_bg_module()
 			let db = bg.pages_db
 			let deleted = await db.deletePage(tab.url)
-			bg.update_icon(tab.id, {starred: false})
+			await bg.update_icon(tab.id, {starred: false})
 		}
 		close()
 	}
@@ -58,7 +58,7 @@
 		let db = bg.pages_db
 		page.starred = false
 		await db.updatePage(page)
-		bg.update_icon(tab.id, {starred: false})
+		await bg.update_icon(tab.id, {starred: false})
 	}
 
 	async function close() {
