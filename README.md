@@ -1,22 +1,26 @@
 # Total Recall
 
-A cross-browser bookmarking and quick-launch extension for power users.
+TotalRecall is a keyboard-first, cross-browser extension, for marking and recalling webpages.
 
-- Instantly bookmark and search using only the keyboard.
-- Synchronize your bookmarks across browsers
-- Support for tags
+It can be used for:
+- Quickly recalling websites you bookmarked in the past
+- Quicklaunching pages you visit often
+- Saving/loading browsing sessions (as bookmarks grouped by a session tag)
+- Synchronizing your bookmarks across browsers
 
 ## Features
 
+- Tag-based organization (no folders)
 - Full-text search + tags search using hashtag syntax (`#mytag`)
-- Uses CouchDB for open-protocol synchronization across devices
-- Official CouchDB server with https access, maintained for free
+	- Sort by relevance, last updated, url, etc. 
+- Uses CouchDB for open-protocol live synchronization across devices
+- We provide an official CouchDB server with https access, maintained for free
 	- Users may sync to their own private CouchDB server instead
-- Export and import your database to and from a local JSON file.
+- Export and import your database to and from a local JSON file
 
 **Built with:**
 - Svelte for UI
-- FlexSearch for fast searching
+- FlexSearch for fast full-text searching
 - PouchDB for persistence and synchronization
 
 ## How to use
