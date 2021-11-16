@@ -11,7 +11,7 @@
     export let url: string
     export let notes: string = ""
     export let tags: Array<string> = []
-    export let suggested_tags: Array<string>
+    export let suggested_tags_promise: Promise<Array<string>>
 
     let edit_url = false;
     let desc_input = null;
@@ -114,6 +114,9 @@ form :global(.svelte-tags-input-tag) {
         <input id="description" placeholder="Description" use:focus bind:value={description} />
     </div>
 
+    {#await suggested_tags_promise}
+        Loading tag suggestions...
+    {:then suggested_tags}
     <div id="tags">
         <Tags
             placeholder="Add tags"
@@ -125,6 +128,9 @@ form :global(.svelte-tags-input-tag) {
         />
         <button class="diminished" tabindex="-100">clear all</button>
     </div>
+    {:catch error}
+        <p style="color: red">{error.message}</p>
+    {/await}
 
     <div id="notes" on:input={() => expand_notes=true}>
         <textarea placeholder="Notes" class={expand_notes?"expand":""} bind:value={notes} />

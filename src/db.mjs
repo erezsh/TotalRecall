@@ -310,6 +310,11 @@ class PageDB {
         this._flex = null
     }
 
+    async get_tags() {
+        let flex = await this.get_flex()
+        return [...flex.tags]
+    }
+
     //
     // Public interface
     //

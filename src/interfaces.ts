@@ -56,6 +56,7 @@ interface PagesDB {
     replicate_to_auth_server(name: string, password: string)
     deleteAllPages()
     addPages(pages: Array<Page>)
+    get_tags(): Promise<Array<string>>
 }
 
 interface BackgroundPage {
@@ -92,13 +93,7 @@ function sleep(ms) {
 
 export async function get_suggested_tags(): Promise<Array<string>> {
 	let db = await get_db()
-
-	while (db.tags === null) {
-		console.debug("Waiting for tags to load")
-		await sleep(100)
-	}
-
-	return [...db.tags]
+	return db.get_tags()
 }
 
 export function get_search_config() {

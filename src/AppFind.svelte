@@ -133,9 +133,6 @@
 		</div>
 
 	{#if edit_mode}
-		{#await get_suggested_tags()}
-			Getting tag suggestions...
-		{:then suggested_tags}
 		<button on:click={()=>edit_mode=false}>Back to search</button>
 		<div id="edit_area">
 			{#each edit_items as page}
@@ -145,16 +142,13 @@
 					url={page._id}
 					notes={page.notes || ''}
 					tags={page.tags || []}
-					suggested_tags={suggested_tags}
+					suggested_tags_promise={get_suggested_tags()}
 					on:save={() => {save_edit_item(page)}}
 					on:cancel={() => {close_edit_item(page)}}
 				/>
 			</div>
 			{/each}
 		</div>
-		{:catch error}
-			<p style="color: red">{error.message}</p>
-		{/await}
 	{:else}
 		<div id="search">
 			<div id="search_bar">

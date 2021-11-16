@@ -56,11 +56,10 @@ function setTag(input) {
                     if (currentTag) input.preventDefault();
 
                     // TAB add first element on the autoComplete list
-                    if (autoComplete && document.getElementById(matchsID)) {
-                        addTag(document.getElementById(matchsID).querySelectorAll("li")[0].textContent);
-                    } else {
-                        addTag(currentTag);
-                    }
+                    // if (autoComplete && document.getElementById(matchsID)) {
+                    //     addTag(document.getElementById(matchsID).querySelectorAll("li")[0].textContent);
+                    // } else {
+                    addTag(currentTag);
                     break;
                 default:
                     input.preventDefault();

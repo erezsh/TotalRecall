@@ -85,22 +85,15 @@
 				<h1> Edit bookmark </h1>
 			{/if}
 
-			{#await get_suggested_tags()}
-				Getting tag suggestions...
-			{:then suggested_tags}
-
-				<EditDialog
-					description={page.description}
-					url={page._id}
-					notes={page.notes || ''}
-					tags={page.tags || []}
-					suggested_tags={suggested_tags}
-					on:save={close}
-					on:cancel={() => {remove_star_and_close(tab, page)}}
-				/>
-			{:catch error}
-				<p style="color: red">{error.message}</p>
-			{/await}
+			<EditDialog
+				description={page.description}
+				url={page._id}
+				notes={page.notes || ''}
+				tags={page.tags || []}
+				suggested_tags_promise={get_suggested_tags()}
+				on:save={close}
+				on:cancel={() => {remove_star_and_close(tab, page)}}
+			/>
 
 			{#if page.visit_count}
 				<h4>
