@@ -8,6 +8,12 @@ It can be used for:
 - Saving/loading browsing sessions (as bookmarks grouped by a session tag)
 - Synchronizing your bookmarks across browsers
 
+## Get it now
+
+- [Chrome Extension](https://chrome.google.com/webstore/detail/total-recall/fjhhkjfebkebegmdmemndmbnaoccpfcj)
+
+- [Firefox Extension](https://addons.mozilla.org/en-US/firefox/addon/total-recall/)
+
 ## Features
 
 - Tag-based organization (no folders)
