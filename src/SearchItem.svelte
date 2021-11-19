@@ -120,7 +120,7 @@
                 Updated: <Time relative timestamp={item.updated} />
             {/if}
 
-            <a on:click={toggle_share_buttons}>
+            <a href="#" on:click|preventDefault={toggle_share_buttons}>
                 <i class="material-icons">share</i>
             </a>
 

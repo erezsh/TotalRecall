@@ -240,7 +240,12 @@ class PageDB {
           // yo, something changed!
           console.log("Replication changed", change)
           set_sync_status({status: 'ok', message: 'Syncing...'})
-          _flex._flex = null   // invalidate flex
+
+          if (change.direction == 'pull') {
+              console.log(" - Rebuilding search index", change)
+              _flex._flex = null   // invalidate flex
+          }
+
         }).on('paused', function (info) {
           // replication was paused, usually because of a lost connection
           console.log("Replication paused", info)
