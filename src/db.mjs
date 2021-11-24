@@ -14,8 +14,9 @@ import PouchDB from 'pouchdb';
 // import PouchDBAuth from 'pouchdb-authentication';
 // PouchDB.plugin(PouchDB_Auth);
 
-
 import {register} from './login.mjs'
+
+const RETRY_TIMEOUT = 500 //ms
 
 function get_couch_url(name, password, database) {
     return `https://${name}:${encodeURIComponent(password)}@totalrecall.erezsh.com:8080/${database}`
@@ -204,35 +205,38 @@ class FlexWrapper {
 }
 
 
-class PageDB {
-
-    constructor() {
+class PouchWrapper {
+    constructor(state) {
         this.pouch = new PouchDB('Total Recall', {})
-
-        // this.remote_pouch = new PouchDB('http://142.93.52.229:5984/_users')
-        // let remote = new PouchDB('http://admin:couchdb@142.93.52.229:5984/pages_127001')
-        // this.pouch.replicate.to(remote)
-
-        this._flex = {building_flex: false}
+        this.syncHandler = null
+        this.state = state
     }
 
     cancel_sync() {
         if (this.syncHandler) {
             console.log("Cancelling sync")
             this.syncHandler.cancel()
-            set_sync_status({status: 'disabled', message: 'Sync disabled'})
         }
+        set_sync_status({status: 'disabled', message: 'Sync disabled'})
     }
 
     sync_to_couch(url) {
-        // TODO: report replicating?
-        let _flex = this._flex
+        // This function produces MaxListenersExceededWarning for a reason I can't explain.
+        // Most likely a bug in PouchDB
+
+        let self = this
 
         this.cancel_sync()
 
         set_sync_status({status: 'disabled', message: 'Attempting to connect...'})
 
         let remote = new PouchDB(url)
+
+        if (this.syncHandler) {
+          this.syncHandler.removeAllListeners()
+          this.syncHandler.cancel()
+        }
+
         this.syncHandler = this.pouch.sync(remote, {
           live: true,
           // retry: true
@@ -243,7 +247,7 @@ class PageDB {
 
           if (change.direction == 'pull') {
               console.log(" - Rebuilding search index", change)
-              _flex._flex = null   // invalidate flex
+              self.state.flex_invalid = true   // invalidate flex
           }
 
         }).on('paused', function (info) {
@@ -256,18 +260,31 @@ class PageDB {
           set_sync_status({status: 'ok', message: 'Syncing...'})
         }).on('error', function (err) {
           // totally unhandled error (shouldn't happen)
-          console.error("Replication failed", err)
-          set_sync_status({status: 'error', message: 'Sync failed! ' + err})
+          set_sync_status({status: 'error', message: `Sync failed. Check your internet connection? (${err.message})`})
+          this.removeAllListeners()
+          this.cancel()
+          self.syncHandler = null
+          // setTimeout(() => self.sync_to_couch(url), RETRY_TIMEOUT)
         });
+
 
     }
 
     async sync_to_main_server(name, password) {
+        let self = this
         if (!name || !password) {
             return set_sync_status({status: 'error', message: "Name and password are required"})
         }
         set_sync_status({status: 'disabled', message: 'Attempting to register...'})
-        let res = await register(name, password)
+
+        let res
+        try {
+            res = await register(name, password)
+        } catch (e) {
+            set_sync_status({status: 'error', message: e.message})
+            setTimeout(() => self.sync_to_main_server(name, password), RETRY_TIMEOUT)
+            return
+        }
         if (res.status === 'ok') {
             let url = get_couch_url(name, password, res.database)
             this.sync_to_couch(url)
@@ -277,42 +294,60 @@ class PageDB {
 
 
 
+}
+
+
+class PageDB {
+
+    constructor() {
+        this.state = {building_flex: false, flex_invalid: true}
+        this.pouch = new PouchWrapper(this.state)
+        this._pouch = this.pouch.pouch
+    }
+
+
     async get_flex() {
-        if (this._flex._flex) {
-            return this._flex._flex
+        let state = this.state
+
+        if (this._flex && !state.flex_invalid) {
+            return this._flex
         }
 
-        if (this._flex.building_flex) {
+        if (this.state.building_flex) {
+            // Another thread is already building flex. Sleep for a bit, it should finish by then.
             for (let i=0; i<10; i++) {
-                if (this._flex.building_flex) {
+                if (this.state.building_flex) {
                     await sleep(100)
                 }
             }
 
-            if (this._flex.building_flex) {
+            if (this.state.building_flex) {
                 console.warn("Flex didn't finish building in 1 sec. Lock timeout.")
-                this._flex.building_flex = false
+                this.state.building_flex = false
             }
         }
 
-        if (this._flex._flex) {
-            return this._flex._flex
+        if (this._flex && !state.flex_invalid) {
+            return this._flex
         }
 
-        this._flex.building_flex = true
+        // (re-)Build flex
+        this.state.building_flex = true
         try {
-            let docs = await this.pouch.allDocs({include_docs:true})
-            this._flex._flex = new FlexWrapper(docs)
+            let docs = await this._pouch.allDocs({include_docs:true})
+            this._flex = new FlexWrapper(docs)
+            this.state.flex_invalid = false
         } finally {
-            this._flex.building_flex = false
+            this.state.building_flex = false
         }
 
-        return this._flex._flex
+        return this._flex
     }
 
 
     invalidate_flex() {
         this._flex = null
+        this.state.flex_invalid = true
     }
 
     async get_tags() {
@@ -337,7 +372,7 @@ class PageDB {
         flex.add_page(url, doc)
 
         try {
-            let res = await this.pouch.put(doc)
+            let res = await this._pouch.put(doc)
             doc._rev = res.rev
         } catch(err) {
             console.error("Error in addPage:", err)
@@ -354,7 +389,7 @@ class PageDB {
         if (current_page) {
             page = {...page, _rev: current_page._rev}
         }
-        return await this.pouch.put(page)
+        return await this._pouch.put(page)
     }
 
     async upsertPage(url, make_new_page) {
@@ -374,16 +409,16 @@ class PageDB {
         if (page) {
             let flex = await this.get_flex()
             flex.del_page(page._id)
-            await this.pouch.remove(page)
+            await this._pouch.remove(page)
             return true
         }
         return false
     }
 
     async deleteAllPages() {
-        let docs = await this.pouch.allDocs({include_docs:false})
+        let docs = await this._pouch.allDocs({include_docs:false})
         let to_delete = docs.rows.map( (r) => ({_id: r.id, _rev:r.value.rev, _deleted: true}))
-        await this.pouch.bulkDocs(to_delete)
+        await this._pouch.bulkDocs(to_delete)
         this.invalidate_flex()
     }
 
@@ -412,19 +447,20 @@ class PageDB {
     }
 
     async destroy() {
-        await this.pouch.destroy()
-        this.pouch = new PouchDB('Total Recall', {})
+        await this._pouch.destroy()
+        this.pouch = new PouchWrapper(this.state)
+        this._pouch = this.pouch.pouch
         this.invalidate_flex()
     }
 
 
     async count() {
-        let res = await this.pouch.allDocs()
+        let res = await this._pouch.allDocs()
         return res.total_rows
     }
 
     async allPages() {
-        let docs = await this.pouch.allDocs({include_docs:true})
+        let docs = await this._pouch.allDocs({include_docs:true})
         let pages = docs.rows.map( (item) => item.doc)
         // Remove revisions, since they are not relevant for this API, and can get it the way.
         for (let page of pages) {
@@ -434,7 +470,7 @@ class PageDB {
     }
 
     async addPages(pages) {
-        await this.pouch.bulkDocs(pages)
+        await this._pouch.bulkDocs(pages)
         this.invalidate_flex()
     }
 
@@ -450,11 +486,11 @@ class PageDB {
 
     async getPage(url) {
         try {
-            return await this.pouch.get(url)
+            return await this._pouch.get(url)
         } catch(e) {
             if (e.status != 404) {
-                console.error("Error trying to get url:", url)
-                throw new Error(e)
+                console.error("Error trying to get url in getPage:", url)
+                // throw new Error(e)
             }
             return null
         }

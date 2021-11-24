@@ -12,13 +12,13 @@ let sync_config = JSON.parse(localStorage.getItem(SYNC_CONFIG_ITEM))
 function apply_sync_config() {
     switch (sync_config.sync_target) {
         case "None":
-            db.cancel_sync()
+            db.pouch.cancel_sync()
             break
         case "CustomCouch":
-            db.sync_to_couch(sync_config.custom_couch_url)
+            db.pouch.sync_to_couch(sync_config.custom_couch_url)
             break
         case "MainServer":
-            db.sync_to_main_server(sync_config.main_server_user, sync_config.main_server_pass)
+            db.pouch.sync_to_main_server(sync_config.main_server_user, sync_config.main_server_pass)
             break
         default:
             console.error("Bad sync target!!", sync_config)
@@ -86,33 +86,33 @@ export async function update_icon(tab_id, page) {
     try {
         await setIcon(tab_id, page?Boolean(page.starred):false)
     } catch(e) {
-        console.error("Could not update icon:", e)
+        console.warning("Could not update icon:", e)
         console.trace()
     }
 }
 
 
-async function extractTabMeta(tab) {
-    try {
-        await install_page_content_script(tab.id)
-    } catch(e) {
-        console.log("@@ Failed installing script", e.message, tab, e)
-    }
-    // console.log("Installed. Sending message", tab.url)
+// async function extractTabMeta(tab) {
+//     try {
+//         await install_page_content_script(tab.id)
+//     } catch(e) {
+//         console.log("@@ Failed installing script", e.message, tab, e)
+//     }
+//     // console.log("Installed. Sending message", tab.url)
 
-    let meta
-    try {
-        // let command = true? "getPageContent" : "getPageKeywords"
-        // the db can't handle page content right now
-        command = "getPageKeywords"
-        meta = await browser.tabs.sendMessage(tab.id, { command })
-        console.log("Page metadata: ", tab.url, meta)
-    } catch(e) {
-        console.log("@@ Failed sending message", e.message, tab, e)
-    }
+//     let meta
+//     try {
+//         // let command = true? "getPageContent" : "getPageKeywords"
+//         // the db can't handle page content right now
+//         command = "getPageKeywords"
+//         meta = await browser.tabs.sendMessage(tab.id, { command })
+//         console.log("Page metadata: ", tab.url, meta)
+//     } catch(e) {
+//         console.log("@@ Failed sending message", e.message, tab, e)
+//     }
 
-    return meta
-}
+//     return meta
+// }
 
 
 async function handleUpdated(tabId, changeInfo, tab) {
@@ -144,13 +144,9 @@ async function handleUpdated(tabId, changeInfo, tab) {
     // } else {
     // }
 
-    let page = await db.getPage(tab.url)
+    const page = await db.getPage(tab.url)
     
-    try {
-        await update_icon(tab.id, page)
-    } catch(err) {
-        console.error(err)
-    }
+    await update_icon(tab.id, page)
 
     // Only edit pages that have already been recorded
 
@@ -197,16 +193,17 @@ async function handleUpdated(tabId, changeInfo, tab) {
 export function get_browser() {
     return browser
 }
-async function install_page_content_script(tab_id) {
-    let r = await browser.permissions.contains({origins: ["*://*/*"]})
-    if (r) {
-        try {
-            await browser.tabs.executeScript(tab_id, { file: "/build/extract_content.js" })
-        } catch(e) {
-            console.error('Failed:', e.message, e)
-        }
-    }
-}
+
+// async function install_page_content_script(tab_id) {
+//     let r = await browser.permissions.contains({origins: ["*://*/*"]})
+//     if (r) {
+//         try {
+//             await browser.tabs.executeScript(tab_id, { file: "/build/extract_content.js" })
+//         } catch(e) {
+//             console.error('Failed:', e.message, e)
+//         }
+//     }
+// }
 
 
 async function handleActivated(info) {
@@ -218,7 +215,7 @@ async function handleActivated(info) {
         console.trace()
         return
     }
-    let page = await db.getPage(tab.url)
+    const page = await db.getPage(tab.url)
     await update_icon(tab.id, page)
 }
 
