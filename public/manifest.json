@@ -2,7 +2,7 @@
     "manifest_version": 2,
 
     "name": "Total Recall",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "Bookmarks & Quicklaunch for power-users",
     "author": "Erez Shinan",
     "homepage_url": "https://github.com/erezsh/TotalRecall/",
@@ -12,8 +12,7 @@
         "https://totalrecall.erezsh.com/"
     ],
     "optional_permissions": [
-        "bookmarks",
-        "*://*/*"
+        "bookmarks"
     ],
     "browser_action": {
         "browser_style": true,
