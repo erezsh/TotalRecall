@@ -7,8 +7,11 @@ console.log("Background page loaded")
 const SYNC_CONFIG_ITEM = 'sync_config'
 const HAS_SEEN_INTRO = 'has_seen_intro'
 
+const RETRY_TIMEOUT = 60000 //ms
+
 
 let sync_config = JSON.parse(localStorage.getItem(SYNC_CONFIG_ITEM))
+
 function apply_sync_config() {
     switch (sync_config.sync_target) {
         case "None":
@@ -35,9 +38,15 @@ window.addEventListener('storage', function(event){
     }
 }, false);
 
-if (sync_config) apply_sync_config()
+if (sync_config) {
+    apply_sync_config()
 
-
+    setInterval( () => {
+        if (!db.pouch.syncHandler && sync_config.sync_target != 'None') {
+            apply_sync_config()
+        }
+    }, RETRY_TIMEOUT)
+}
 
 
 export let pages_db = db;

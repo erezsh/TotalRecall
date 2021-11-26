@@ -16,8 +16,6 @@ import PouchDB from 'pouchdb';
 
 import {register} from './login.mjs'
 
-const RETRY_TIMEOUT = 500 //ms
-
 function get_couch_url(name, password, database) {
     return `https://${name}:${encodeURIComponent(password)}@totalrecall.erezsh.com:8080/${database}`
 }
@@ -221,9 +219,6 @@ class PouchWrapper {
     }
 
     sync_to_couch(url) {
-        // This function produces MaxListenersExceededWarning for a reason I can't explain.
-        // Most likely a bug in PouchDB
-
         let self = this
 
         this.cancel_sync()
@@ -264,7 +259,6 @@ class PouchWrapper {
           this.removeAllListeners()
           this.cancel()
           self.syncHandler = null
-          // setTimeout(() => self.sync_to_couch(url), RETRY_TIMEOUT)
         });
 
 
@@ -282,7 +276,6 @@ class PouchWrapper {
             res = await register(name, password)
         } catch (e) {
             set_sync_status({status: 'error', message: e.message})
-            setTimeout(() => self.sync_to_main_server(name, password), RETRY_TIMEOUT)
             return
         }
         if (res.status === 'ok') {
