@@ -122,7 +122,7 @@ form :global(.svelte-tags-input-tag) {
             placeholder="Add tags"
             onlyUnique={true}
             autoComplete={suggested_tags}
-            addKeys={[9, 188]}
+            addKeys={[9, 188, 13]}
             on:tags={handleTags}
             {tags}
         />

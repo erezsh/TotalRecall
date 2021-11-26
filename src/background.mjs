@@ -86,7 +86,7 @@ export async function update_icon(tab_id, page) {
     try {
         await setIcon(tab_id, page?Boolean(page.starred):false)
     } catch(e) {
-        console.warning("Could not update icon:", e)
+        console.warn("Could not update icon:", e)
         console.trace()
     }
 }

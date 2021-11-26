@@ -196,7 +196,7 @@
             <Tags
                 placeholder="Choose tags"
                 onlyUnique={true}
-                addKeys={[9, 188]}
+                addKeys={[9, 188, 13]}
                 on:tags={handleTags}
                 tags={sidebar_tags}
             />

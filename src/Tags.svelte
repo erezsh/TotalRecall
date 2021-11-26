@@ -51,21 +51,14 @@ function setTag(input) {
     if (addKeys) {
         addKeys.forEach(function(key) {
             if (key === input.keyCode) {
-                switch (input.keyCode) {
-                case 9:
-                    if (currentTag) input.preventDefault();
+                if (currentTag) input.preventDefault();
 
-                    // TAB add first element on the autoComplete list
-                    // if (autoComplete && document.getElementById(matchsID)) {
-                    //     addTag(document.getElementById(matchsID).querySelectorAll("li")[0].textContent);
-                    // } else {
-                    addTag(currentTag);
-                    break;
-                default:
-                    input.preventDefault();
-                    addTag(currentTag);
-                    break;
-                }
+                // TAB add first element on the autoComplete list
+                // if (autoComplete && document.getElementById(matchsID)) {
+                //     addTag(document.getElementById(matchsID).querySelectorAll("li")[0].textContent);
+                // } else {
+                addTag(currentTag);
+                // }
             }
         });
     }
@@ -190,10 +183,10 @@ function splitTags(data) {
 }
 
 function getMatchElements(input) {
+    let value = input.target.value;
 
     if (!autoComplete) return;
 
-    var value = input.target.value;
 
     // Escape
     if (value == "" || input.keyCode === 27 || value.length < minChars ) {
