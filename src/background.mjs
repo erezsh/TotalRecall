@@ -42,7 +42,14 @@ if (sync_config) {
     apply_sync_config()
 
     setInterval( () => {
-        if (!db.pouch.syncHandler && sync_config.sync_target != 'None') {
+        if (
+            !db.pouch.syncHandler
+            && sync_config.sync_target != 'None'
+            
+            // XXX Temporarily disable due to a memory leak in PouchDB
+            // https://github.com/pouchdb/pouchdb/pull/8419
+            && sync_config.sync_target != 'CustomCouch'     
+        ) {
             apply_sync_config()
         }
     }, RETRY_TIMEOUT)
