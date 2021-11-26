@@ -150,13 +150,18 @@ class FlexWrapper {
 
 
 
-    _includes_all_tags(r, tags) {
+    _filter_by_tags(r, include_tags, exclude_tags) {
         if (!r.tags) {
             return false
         }
-        let tags_str = r.tags.join(' ').toUpperCase()
-        for (let tag of tags) {
+        let tags_str = r.tags.join('|').toUpperCase()
+        for (let tag of include_tags) {
             if (!tags_str.includes(tag.toUpperCase())) {
+                return false
+            }
+        }
+        for (let tag of exclude_tags) {
+            if (tags_str.includes(tag.toUpperCase())) {
                 return false
             }
         }
@@ -174,7 +179,7 @@ class FlexWrapper {
         return true
     }
 
-    search(words, tags, exclude, only_starred) {
+    search(words, tags, exclude, exclude_tags, only_starred) {
         // The following line won't work. See: https://github.com/nextapps-de/flexsearch/issues/285
         // let search_str = words.concat(tags).join(' ')
 
@@ -196,7 +201,7 @@ class FlexWrapper {
         console.debug("Search for ", search_str, "returned:", docs.length) //, "initial results ---- options:", tags, exclude, only_starred)
 
         return Object.values(docs)
-                .filter((r) => this._includes_all_tags(r, tags))
+                .filter((r) => this._filter_by_tags(r, tags, exclude_tags))
                 .filter((r) => this._not_includes_excluded(r, exclude))
     }
 
@@ -426,17 +431,27 @@ class PageDB {
         let elems = []
         let tags = []
         let exclude = []
+        let exclude_tags = []
         for (let elem of phrase.trim().split(' ')) {
             if (elem.startsWith('#')) {
-                tags.push(elem.substr(1))
+                const tag = elem.substr(1)
+                if (tag) tags.push(tag)
             } else if (elem.startsWith('-')) {
-                exclude.push(elem.substr(1))
+                let to_exclude = elem.substr(1)
+                if (to_exclude) {
+                    if (to_exclude.startsWith('#')) {
+                        const tag = to_exclude.substr(1)
+                        if (tag) exclude_tags.push(tag)
+                    } else {
+                        exclude.push(to_exclude)
+                    }
+                }
             } else {
                 elems.push(elem)
             }
         }
         let flex = await this.get_flex()
-        return flex.search(elems, tags, exclude, only_starred)
+        return flex.search(elems, tags, exclude, exclude_tags, only_starred)
     }
 
     async destroy() {
