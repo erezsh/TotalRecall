@@ -4,8 +4,7 @@
     import Button from '@smui/button';
     import { createEventDispatcher } from 'svelte';
 	// import Dialog, {Title, Content, Actions, Label} from '@smui/dialog';
-    import _ from 'lodash/core';
-    import {SortByEnum} from './interfaces.ts'
+    import {sort_items, SortByEnum} from './interfaces.ts'
 
     import SearchItem from './SearchItem.svelte'
     import EditDialog from './EditDialog.svelte';
@@ -34,24 +33,6 @@
     let sorted_items
 
     let sort_by_options = Object.entries(SortByEnum).map(([text, option]) => {return {option, text}})
-
-    function sort_items(items, sort_by) {
-        if (sort_by === SortByEnum.Relevance) {
-            return items
-        }
-        let res = _.sortBy(items, x => {
-            let value = x[sort_by]
-            // if (sort_by === 'updated' || sort_by === 'created') {
-            //     return -(new Date(value).getTime())
-            // }
-            return value
-        })
-
-        if (sort_by === SortByEnum.Updated || sort_by === SortByEnum.Created) {
-            res = res.reverse()
-        }
-        return res
-    }
 
     function refresh() {
         sorted_items = sort_items(items, sort_by)

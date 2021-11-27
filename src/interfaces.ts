@@ -1,6 +1,8 @@
 import browser from "webextension-polyfill";
 import { writable } from 'svelte-local-storage-store'
 
+import _ from 'lodash/core';
+
 export enum SyncTarget {
   None = "None",
   MainServer = "MainServer",
@@ -99,4 +101,16 @@ export async function get_suggested_tags(): Promise<Array<string>> {
 export function get_search_config() {
 	let defaults: GeneralConfig = {sidebar_tags: [], sort_by: SortByEnum.Relevance}
     return writable<GeneralConfig>('search_config', defaults)
+}
+
+export function sort_items(items, sort_by) {
+    if (sort_by === SortByEnum.Relevance) {
+        return items
+    }
+    let res = _.sortBy(items, x => x[sort_by])
+
+    if (sort_by === SortByEnum.Updated || sort_by === SortByEnum.Created) {
+        res = res.reverse()
+    }
+    return res
 }

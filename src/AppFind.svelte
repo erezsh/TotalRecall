@@ -5,7 +5,7 @@
 	import SearchList from './SearchList.svelte'
 	import Sidebar from './Sidebar.svelte'
 	import EditDialog from './EditDialog.svelte';
-	import {get_db, Page, get_suggested_tags, get_search_config} from './interfaces.ts';
+	import {get_db, Page, get_suggested_tags, get_search_config, sort_items, SortByEnum} from './interfaces.ts';
 
     
     const search_config = get_search_config()
@@ -46,7 +46,7 @@
 		{
 			sidebars.push({
 				name: tag,
-				items: await db.search('#'+tag)
+				items: sort_items(await db.search('#'+tag+' -#done'), SortByEnum.Updated)
 			})
 		}
 		return sidebars;
