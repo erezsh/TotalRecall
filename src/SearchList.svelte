@@ -3,7 +3,6 @@
     import Select, {Option} from '@smui/select';
     import Button from '@smui/button';
     import { createEventDispatcher } from 'svelte';
-	// import Dialog, {Title, Content, Actions, Label} from '@smui/dialog';
     import {sort_items, SortByEnum} from './interfaces.ts'
 
     import SearchItem from './SearchItem.svelte'
@@ -215,31 +214,5 @@
     }
 
 
-
-.sort_menu {
-    display: inline-block;
-}
-.sort_menu input[type="radio"] {
-  opacity: 0;
-  position: fixed;
-  width: 0;
-}
-.sort_menu label {
-    display: inline-block;
-    background-color: #ddd;
-    padding: 10px 20px;
-    font-size: 12px;
-    border-radius: 8px;
-}
-.sort_menu input[type="radio"]:checked + label {
-    background-color:#bfb;
-    border-color: #4c4;
-}
-.sort_menu input[type="radio"]:focus + label {
-  background-color: #cfc;
-}
-.sort_menu label:hover {
-  background-color: #dfd;
-}
 
 </style>

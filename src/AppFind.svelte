@@ -23,24 +23,23 @@
 	async function set_search_results(search, only_starred, shuffled=true) {
 		// Avoid the 'await' update flicker
 		let res = await get_search_results(search, only_starred)
-		// search_results = new Promise( (then, except) => {then(res)})
 		search_results = {items: res, shuffled}
 	}
 
 	async function get_search_results(search, only_starred) {
-		let db = await get_db()
+		const db = await get_db()
 		return db.search(search, only_starred)
 	}
 
 	async function get_count(): number {
-		let db = await get_db()
+		const db = await get_db()
 		return await db.count()
 	}
 
 	function focus(x) {x.focus()}
 
 	async function get_sidebars() {
-		let db = await get_db()
+		const db = await get_db()
 		let sidebars = []
 		for (let tag of $search_config.sidebar_tags)
 		{
@@ -56,7 +55,6 @@
 		// search_input.value isn't accessible after back button
 		// Bug is svelte? Use SetTimeout 0 to fix it
 		setTimeout(function() {
-			console.log(search_input.value)
 			search = search_input.value
 		}, 0)
 	});
@@ -65,7 +63,7 @@
 		let selected = e.detail.selected
 		let res = confirm('delete ' + selected.length + ' items?')
 		if (res) {
-			let db = await get_db()
+			const db = await get_db()
 			for (let item of selected) {
 				console.log('deleting ', item)
 				await db.deletePage(item._id)
@@ -152,8 +150,8 @@
 	{:else}
 		<div id="search">
 			<div id="search_bar">
-				<!-- <input type="search" id="search_input" placeholder="Search" bind:value={search} use:focus /> -->
 				<input type="search" id="search_input" bind:value={search} bind:this={search_input} use:focus placeholder="Enter free-text and #tags" />
+			    <i class="material-icons">search</i>
 				<!-- <label><input type="checkbox" bind:checked={only_starred} />Only Starred</label> -->
 			</div>
 		</div>
@@ -196,7 +194,6 @@ main {
 }
 #sidebars {
 	padding: 20px;
-	/* width: 30vw; */
 	display: flex;
 	flex-wrap: wrap;
 }
@@ -266,6 +263,14 @@ main {
   transform: rotate(360deg);
 }
 
-    /* background: #eee; */
+#search_bar > input {
+	padding-left: 40px;
+}
+#search_bar > i {
+    position: absolute;
+    margin-top: 15px;
+    color: silver;
+    margin-left: 10px;
+}
 
 </style>
