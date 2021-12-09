@@ -45,17 +45,23 @@ You can activate TotalRecall from any page in your browser.
 	- Press `Insert` to edit the bookmarks for the selected pages
 	- Press `Delete` to delete the bookmarks for the selected pages
 
-## Change Shortcuts
+To change the activation shortcuts, see "Setup -> Change Shortcuts".
 
-The default activation shortcuts (`Ctrl+Shift`+`F`/`.`) were chosen to be compatible with both Chrome and Firefox. However, you can change them to whatever you like.
+## Setup
 
-To change the shortcuts:
+TotalRecall works well out of the box, but we recommend customizing it to get the most out of it.
 
-- Chrome -- Go to `chrome://extensions` in your browser. Click the 'hamburger' icon, and choose "Keyboard Shortcuts".
+### Customize Search Page
 
-- Firefox -- Go to `about:addons` (Ctrl+Shift+A). Click the 'settings (gear)' icon, and choose "Manage Extension Shortcuts". 
+By default, the search page is blank until you start typing into the search box.
 
-## Backup & Syncronization
+But you can set it up to contain lists of items, based on their tags.
+
+In the Settings Page (you can go there by clicking the Gear on the top-right of the Find Page), fill in the input under "Tags to show in main page". Items with these tags will appear every time you open the Find Page.
+
+Each item will be listed with a checkbox. If you click it, the checked item will receive the special `#done` tag, which will prevent it from appearing next time you load the page. This can be especially useful for task lists, like ToDo items. 
+
+### Backup & Syncronization
 
 Replication (sync) is disabled by default, but can be enabled by the user.
 
@@ -67,12 +73,24 @@ There are two replication options:
 - **Sync to custom CouchDB** - Will sync to any CouchDB that has a public URL.
 	- CouchDB databases are very easy to set up. (We highly recommend [Caddy](https://caddyserver.com/) as an SSL front).
 
+### Change Shortcuts
+
+The default activation shortcuts (`Ctrl+Shift`+`F`/`.`) were chosen to be compatible with both Chrome and Firefox. However, you can change them to whatever you like.
+
+To change the shortcuts:
+
+- Chrome -- Go to `chrome://extensions` in your browser. Click the 'hamburger' icon, and choose "Keyboard Shortcuts".
+
+- Firefox -- Go to `about:addons` (Ctrl+Shift+A). Click the 'settings (gear)' icon, and choose "Manage Extension Shortcuts". 
+
+
 
 ## How to build?
 
 If you want to build the extension yourself, just clone it and run:
 
 ```bash
+	npm install
 	npm run build
 ```
 
