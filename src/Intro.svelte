@@ -79,7 +79,7 @@
 	</p>
 
     <ol class="explanation">
-    	<li><p><b>Bookmark - </b>Press <code class="strong">Ctrl+Shift+K</code> to mark the current page.</p>
+    	<li><p><b>Bookmark - </b>Press <code class="strong">Ctrl+Shift+.</code> to mark the current page.</p>
     		<ul>
     			<li>Edit the bookmark, and press <code>Enter</code> to confirm</li>
     			<li><code>Escape</code> - cancel bookmark, if it's new.</li>

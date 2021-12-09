@@ -33,7 +33,7 @@
     },
     "background": {
       "scripts": ["build/background.js"],
-      "persistent": false
+      "persistent": true
     },
     "options_ui": {
       "page": "conf.html",
@@ -42,15 +42,13 @@
     "commands": {
       "add_bookmark": {
         "suggested_key": {
-          "default": "Ctrl+Shift+F",
-          "windows": "Ctrl+Shift+F"
+          "default": "Ctrl+Shift+F"
         },
-        "description": "Find bookmark"
+        "description": "Find bookmarks"
       },
-      "_execute_page_action": {
+      "_execute_browser_action": {
         "suggested_key": {
-          "default": "Ctrl+Shift+K",
-          "windows": "Ctrl+Shift+K"
+          "default": "Ctrl+Shift+Period"
         },
         "description": "Bookmark current page"
       }

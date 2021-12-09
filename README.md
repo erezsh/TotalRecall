@@ -31,11 +31,13 @@ It can be used for:
 
 ## How to use
 
-- Press `Ctrl+Shift+K` to bookmark the current page
+You can activate TotalRecall from any page in your browser.
+
+- Press `Ctrl+Shift+.` to bookmark the current page
 	- Edit the bookmark, and press `Enter` to confirm
 	- Press `Escape` to cancel bookmark
 
-- Press `Ctrl+Shift+F` to open search, and start typing!
+- Press `Ctrl+Shift+F` to open a new search page, and start typing!
 	- Navigate the results using `Up`/`Down`/`Page Up`/`Page Down`/`Home`/`End`
 	- Press `Enter` to go to selected page(s)
 	- Press `Ctrl+Enter` to open the selected pages in new tabs
@@ -43,6 +45,15 @@ It can be used for:
 	- Press `Insert` to edit the bookmarks for the selected pages
 	- Press `Delete` to delete the bookmarks for the selected pages
 
+## Change Shortcuts
+
+The default activation shortcuts (`Ctrl+Shift`+`F`/`.`) were chosen to be compatible with both Chrome and Firefox. However, you can change them to whatever you like.
+
+To change the shortcuts:
+
+- Chrome -- Go to `chrome://extensions` in your browser. Click the 'hamburger' icon, and choose "Keyboard Shortcuts".
+
+- Firefox -- Go to `about:addons` (Ctrl+Shift+A). Click the 'settings (gear)' icon, and choose "Manage Extension Shortcuts". 
 
 ## Backup & Syncronization
 
