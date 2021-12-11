@@ -80,7 +80,7 @@
             }
 
             for (let url of tail) {
-                browser.tabs.create({url, active:false, selected:false})
+                browser.tabs.create({url, active:false})
             }
 
             if (!new_tab) {
