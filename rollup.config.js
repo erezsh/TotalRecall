@@ -136,7 +136,7 @@ export default [
 		output: {
 			sourcemap: true,
 			format: 'iife',
-			name: 'find',
+			name: 'conf',
 			file: 'public/build/conf.js'
 		},
 		plugins: [_svelte('conf'), typescript(), ...plugins],
@@ -147,7 +147,7 @@ export default [
 		output: {
 			sourcemap: true,
 			format: 'iife',
-			name: 'find',
+			name: 'intro',
 			file: 'public/build/intro.js'
 		},
 		plugins: [_svelte('intro'), typescript(), ...plugins],
@@ -169,7 +169,7 @@ export default [
 		output: {
 			sourcemap: true,
 			format: 'iife',
-			name: 'background',
+			name: 'extract_content',
 			file: 'public/build/extract_content.js'
 		},
 		plugins: [nodePolyfills(), ...plugins],
